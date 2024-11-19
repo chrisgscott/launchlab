@@ -23,21 +23,33 @@ export type NextStep = {
 export type LaunchStatus = 'READY FOR LIFTOFF' | 'PREFLIGHT CHECKS NEEDED' | 'MISSION SCRUBBED';
 
 export type AnalysisInsights = {
-  // Core Factors (60% of total)
-  marketOpportunity: FactorAnalysis;
-  competitiveAdvantage: FactorAnalysis;
-  feasibility: FactorAnalysis;
+  // Idea Refinement & Positioning
+  oneLiner: string;
+  uniqueValueInsights: string[];
+  differentiators: string[];
 
-  // Supporting Factors (40% of total)
-  revenuePotential: FactorAnalysis;
-  marketTiming: FactorAnalysis;
-  scalability: FactorAnalysis;
+  // Target Customer
+  targetAudienceInsights: string[];
+  painPoints: string[];
+
+  // Landing Page Blueprint
+  headlines: string[];
+  keyBenefits: string[];
+
+  // Validation Plan
+  nextSteps: string[];
+  successMetrics: string[];
+
+  // Confidence Boosters
+  successStories: string[];
 
   // Overall Analysis
   totalScore: number;
+  marketOpportunities: string[];
+  risks: string[];
   launchStatus: LaunchStatus;
   criticalIssues: CriticalIssue[];
-  nextSteps: NextStep[];
+  nextStepsReport: NextStep[];
 };
 
 export type IdeaAnalysis = {

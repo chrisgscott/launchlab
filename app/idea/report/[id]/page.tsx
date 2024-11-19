@@ -147,30 +147,57 @@ export default function ReportPage() {
       </div>
 
       {/* Key Insights Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* Market Opportunity */}
+      <div className="grid grid-cols-1 gap-6 mb-8">
+        {/* Idea Refinement & Positioning */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
             <div className="flex items-start gap-4">
               <div className="p-3 rounded-full bg-success/10">
-                <TrendingUp className="w-6 h-6 text-success" />
+                <Lightbulb className="w-6 h-6 text-success" />
               </div>
               <div>
-                <h3 className="text-xl font-bold mb-2">Market Opportunity</h3>
-                <div className="space-y-2">
-                  {insights.marketOpportunities.map((opportunity: string, index: number) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                      <p>{opportunity}</p>
+                <h3 className="text-xl font-bold mb-2">Idea Refinement & Positioning</h3>
+                <div className="space-y-4">
+                  {/* One-liner */}
+                  <div className="card bg-base-200">
+                    <div className="card-body">
+                      <h4 className="font-semibold">Your One-Liner</h4>
+                      <p className="text-lg">{insights.oneLiner}</p>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Value Proposition */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Unique Value Proposition</h4>
+                    <div className="space-y-2">
+                      {insights.uniqueValueInsights.map((insight: string, index: number) => (
+                        <div key={index} className="flex items-start gap-2">
+                          <BadgeCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
+                          <p>{insight}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Key Differentiators */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Key Differentiators</h4>
+                    <div className="space-y-2">
+                      {insights.differentiators.map((diff: string, index: number) => (
+                        <div key={index} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
+                          <p>{diff}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Target Audience */}
+        {/* Target Customer Deep-Dive */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
             <div className="flex items-start gap-4">
@@ -178,58 +205,157 @@ export default function ReportPage() {
                 <Users className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl font-bold mb-2">Target Audience</h3>
-                <div className="space-y-2">
-                  {insights.targetAudienceInsights.map((insight: string, index: number) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <Target className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <p>{insight}</p>
+                <h3 className="text-xl font-bold mb-2">Target Customer Deep-Dive</h3>
+                <div className="space-y-4">
+                  {/* Ideal Early Adopter */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Ideal Early Adopter Profile</h4>
+                    <div className="card bg-base-200">
+                      <div className="card-body">
+                        <div className="space-y-2">
+                          {insights.targetAudienceInsights.map((insight: string, index: number) => (
+                            <div key={index} className="flex items-start gap-2">
+                              <Target className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                              <p>{insight}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Current Solutions & Pain Points */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Current Solutions & Pain Points</h4>
+                    <div className="space-y-2">
+                      {insights.painPoints.map((point: string, index: number) => (
+                        <div key={index} className="flex items-start gap-2">
+                          <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                          <p>{point}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Potential Risks */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-warning/10">
-                <AlertCircle className="w-6 h-6 text-warning" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Potential Risks</h3>
-                <div className="space-y-2">
-                  {insights.risks.map((risk: string, index: number) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-                      <p>{risk}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Unique Value Proposition */}
+        {/* Landing Page Blueprint */}
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
             <div className="flex items-start gap-4">
               <div className="p-3 rounded-full bg-secondary/10">
-                <Lightbulb className="w-6 h-6 text-secondary" />
+                <TrendingUp className="w-6 h-6 text-secondary" />
               </div>
               <div>
-                <h3 className="text-xl font-bold mb-2">Unique Value Proposition</h3>
-                <div className="space-y-2">
-                  {insights.uniqueValueInsights.map((insight: string, index: number) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <BadgeCheck className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
-                      <p>{insight}</p>
+                <h3 className="text-xl font-bold mb-2">Landing Page Blueprint</h3>
+                <div className="space-y-4">
+                  {/* Headline Formulas */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Recommended Headlines</h4>
+                    <div className="space-y-2">
+                      {insights.headlines.map((headline: string, index: number) => (
+                        <div key={index} className="card bg-base-200">
+                          <div className="card-body py-2">
+                            <p className="font-medium">{headline}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Key Benefits */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Key Benefits to Highlight</h4>
+                    <div className="space-y-2">
+                      {insights.keyBenefits.map((benefit: string, index: number) => (
+                        <div key={index} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                          <p>{benefit}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick-Start Validation Plan */}
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-full bg-warning/10">
+                <Rocket className="w-6 h-6 text-warning" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">Quick-Start Validation Plan</h3>
+                <div className="space-y-4">
+                  {/* 30-day Timeline */}
+                  <div>
+                    <h4 className="font-semibold mb-2">30-Day Validation Timeline</h4>
+                    <div className="space-y-2">
+                      {insights.nextSteps.map((step: string, index: number) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
+                            <span className="text-warning font-bold">
+                              W{Math.floor(index / 2) + 1}
+                            </span>
+                          </div>
+                          <p>{step}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Success Metrics */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Success Metrics</h4>
+                    <div className="card bg-base-200">
+                      <div className="card-body">
+                        <div className="space-y-2">
+                          {insights.successMetrics.map((metric: string, index: number) => (
+                            <div key={index} className="flex items-start gap-2">
+                              <Target className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                              <p>{metric}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Confidence Boosters */}
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-full bg-success/10">
+                <BadgeCheck className="w-6 h-6 text-success" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">Confidence Boosters</h3>
+                <div className="space-y-4">
+                  {/* Similar Success Stories */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Similar Success Stories</h4>
+                    <div className="space-y-2">
+                      {insights.successStories.map((story: string, index: number) => (
+                        <div key={index} className="card bg-base-200">
+                          <div className="card-body py-3">
+                            <p>{story}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
