@@ -77,53 +77,93 @@ export async function POST(req: NextRequest) {
           }
 
           const customerId = session?.customer;
-          const priceId = session?.line_items?.data[0]?.price.id;
+          const priceId = session?.line_items?.data?.[0]?.price?.id;
+          if (!priceId) {
+            throw new Error('Missing price ID in checkout session');
+          }
           const userId = stripeObject.client_reference_id;
           const plan = configFile.stripe.plans.find(p => p.priceId === priceId);
 
-          const customer = (await stripe.customers.retrieve(
-            customerId as string
-          )) as Stripe.Customer;
+          if (!customerId || typeof customerId !== 'string') {
+            throw new Error('Missing or invalid customer ID in checkout session');
+          }
 
-          if (!plan) break;
+          const customerResponse = await stripe.customers.retrieve(customerId);
+
+          // Check if customer is deleted
+          if ('deleted' in customerResponse) {
+            throw new Error('Cannot process deleted customer');
+          }
+
+          const customerEmail = customerResponse.email;
+          if (!customerEmail) {
+            throw new Error('Customer email is missing');
+          }
+
+          if (!plan) {
+            console.warn('No matching plan found for price ID:', priceId);
+            break;
+          }
 
           let user;
           if (!userId) {
             // check if user already exists
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('*')
-              .eq('email', customer.email)
+              .eq('email', customerEmail)
               .single();
+
+            if (error) {
+              throw new Error(`Failed to fetch user profile: ${error.message}`);
+            }
+
             if (profile) {
               user = profile;
             } else {
               // create a new user using supabase auth admin
-              const { data } = await supabase.auth.admin.createUser({
-                email: customer.email,
+              const { data, error: createUserError } = await supabase.auth.admin.createUser({
+                email: customerEmail,
+                email_confirm: true, // This ensures the email is marked as confirmed
               });
+
+              if (createUserError) {
+                throw new Error(`Failed to create user: ${createUserError.message}`);
+              }
 
               user = data?.user;
             }
           } else {
             // find user by ID
-            const { data: profile } = await supabase
+            const { data: profile, error: fetchUserError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', userId)
               .single();
 
+            if (fetchUserError) {
+              throw new Error(`Failed to fetch user profile: ${fetchUserError.message}`);
+            }
+
             user = profile;
           }
 
-          await supabase
+          if (!user?.id) {
+            throw new Error('Failed to find or create user');
+          }
+
+          const { error: updateError } = await supabase
             .from('profiles')
             .update({
               customer_id: customerId,
               price_id: priceId,
               has_access: true,
             })
-            .eq('id', user?.id);
+            .eq('id', user.id);
+
+          if (updateError) {
+            throw new Error(`Failed to update user profile: ${updateError.message}`);
+          }
 
           // Extra: send email with user link, product page, etc...
           // try {
@@ -154,10 +194,29 @@ export async function POST(req: NextRequest) {
           const stripeObject: Stripe.Subscription = event.data.object as Stripe.Subscription;
           const subscription = await stripe.subscriptions.retrieve(stripeObject.id);
 
-          await supabase
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('customer_id', subscription.customer)
+            .single();
+
+          if (profileError) {
+            throw new Error(`Failed to fetch profile: ${profileError.message}`);
+          }
+
+          if (!profile) {
+            throw new Error('No profile found for customer');
+          }
+
+          const { error: updateError } = await supabase
             .from('profiles')
             .update({ has_access: false })
             .eq('customer_id', subscription.customer);
+
+          if (updateError) {
+            throw new Error(`Failed to update profile access: ${updateError.message}`);
+          }
+
           break;
         }
 
@@ -165,24 +224,39 @@ export async function POST(req: NextRequest) {
           // Customer just paid an invoice (for instance, a recurring payment for a subscription)
           // Grant access to the product
           const stripeObject: Stripe.Invoice = event.data.object as Stripe.Invoice;
-          const priceId = stripeObject.lines.data[0].price.id;
+          const lineItem = stripeObject.lines.data?.[0];
+          if (!lineItem?.price?.id) {
+            throw new Error('Missing price ID in invoice line items');
+          }
+          const priceId = lineItem.price.id;
           const customerId = stripeObject.customer;
 
-          // Find profile where customer_id equals the customerId (in table called 'profiles')
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('customer_id', customerId)
             .single();
 
+          if (profileError) {
+            throw new Error(`Failed to fetch profile: ${profileError.message}`);
+          }
+
+          if (!profile) {
+            throw new Error('No profile found for customer');
+          }
+
           // Make sure the invoice is for the same plan (priceId) the user subscribed to
           if (profile.price_id !== priceId) break;
 
-          // Grant the profile access to your product. It's a boolean in the database, but could be a number of credits, etc...
-          await supabase
+          // Grant the profile access to your product
+          const { error: updateError } = await supabase
             .from('profiles')
             .update({ has_access: true })
             .eq('customer_id', customerId);
+
+          if (updateError) {
+            throw new Error(`Failed to update profile access: ${updateError.message}`);
+          }
 
           break;
         }
