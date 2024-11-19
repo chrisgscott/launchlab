@@ -23,9 +23,8 @@ interface Feature {
 // - alt: The alt text of the image (if type is 'image')
 const features = [
   {
-    title: "Emails",
-    description:
-      "Send transactional emails, setup your DNS to avoid spam folder (DKIM, DMARC, SPF in subdomain), and listen to webhook to receive & forward emails",
+    title: "Email Infrastructure",
+    description: "No more wrestling with DNS records or spam folders. We handle the technical complexity so you can focus on your big idea. Includes DKIM, DMARC, SPF setup, and webhook management.",
     type: "video",
     path: "https://d3m8mk7e1mf7xn.cloudfront.net/app/newsletter.webm",
     format: "video/webm",
@@ -46,9 +45,8 @@ const features = [
     ),
   },
   {
-    title: "Payments",
-    description:
-      "Create checkout sessions, handle webhooks to update user's account (subscriptions, one-time payments...) and tips to setup your account & reduce chargebacks",
+    title: "Payment Simplification",
+    description: "Stripe integration that just works. Create checkout sessions, handle subscriptions, and reduce chargebacks—all without losing sleep over payment complexities.",
     type: "image",
     path: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3540&q=80",
     alt: "A computer",
@@ -70,9 +68,8 @@ const features = [
     ),
   },
   {
-    title: "Authentication",
-    description:
-      "Magic links setup, login with Google walkthrough, save user in MongoDB/Supabase, private/protected pages & API calls",
+    title: "Authentication Demystified",
+    description: "Magic links, Google login, secure user management—all out of the box. No more getting lost in authentication rabbit holes. Just pure, simple user access.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -91,9 +88,8 @@ const features = [
     ),
   },
   {
-    title: "Style",
-    description:
-      "Components, animations & sections (like this features section), 20+ themes with daisyUI, automatic dark mode",
+    title: "Design Without Limits",
+    description: "20+ themes, automatic dark mode, and components that actually look good. We believe design should empower your idea, not constrain it.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"

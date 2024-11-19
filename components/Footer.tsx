@@ -4,7 +4,7 @@ import config from "@/config";
 import logo from "@/app/icon.png";
 
 // Add the Footer to the bottom of your landing page and more.
-// The support link is connected to the config.js file. If there's no config.mailgun.supportEmail, the link won't be displayed.
+// The support link is connected to the config.js file. If there's no config.email.supportEmail, the link won't be displayed.
 
 const Footer = () => {
 	return (
@@ -34,7 +34,7 @@ const Footer = () => {
 							{config.appDescription}
 						</p>
 						<p className="mt-3 text-sm text-base-content/60">
-							Copyright © {new Date().getFullYear()} - All rights
+							Copyright {new Date().getFullYear()} - All rights
 							reserved
 						</p>
 
@@ -72,15 +72,13 @@ const Footer = () => {
 							</div>
 
 							<div className="flex flex-col justify-center items-center md:items-start gap-2 mb-10 text-sm">
-								{config.mailgun.supportEmail && (
-									<a
-										href={`mailto:${config.mailgun.supportEmail}`}
-										target="_blank"
+								{config.email.supportEmail && (
+									<Link
 										className="link link-hover"
-										aria-label="Contact Support"
+										href={`mailto:${config.email.supportEmail}`}
 									>
 										Support
-									</a>
+									</Link>
 								)}
 								<Link
 									href="/#pricing"

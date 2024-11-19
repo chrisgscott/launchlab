@@ -48,10 +48,9 @@ export interface ConfigProps {
     bucketUrl?: string;
     cdn?: string;
   };
-  mailgun: {
-    subdomain: string;
-    fromNoReply: string;
-    fromAdmin: string;
+  email: {
+    fromEmail: string;
+    fromName: string;
     supportEmail?: string;
     forwardRepliesTo?: string;
   };

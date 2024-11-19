@@ -10,10 +10,13 @@ const Pricing = () => {
     <section className="bg-base-200 overflow-hidden" id="pricing">
       <div className="py-24 px-8 max-w-5xl mx-auto">
         <div className="flex flex-col text-center w-full mb-20">
-          <p className="font-medium text-primary mb-8">Pricing</p>
+          <p className="font-medium text-primary mb-8">Pricing Without Complexity</p>
           <h2 className="font-bold text-3xl lg:text-5xl tracking-tight">
-            Save hours of repetitive code and ship faster!
+            Your Innovation, Unshackled
           </h2>
+          <p className="text-base-content/80 mt-4 max-w-2xl mx-auto">
+            No hidden fees, no complicated tiers. Just the tools you need to turn your big idea into reality.
+          </p>
         </div>
 
         <div className="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
@@ -24,7 +27,7 @@ const Pricing = () => {
                   <span
                     className={`badge text-xs text-primary-content font-semibold border-0 bg-primary`}
                   >
-                    POPULAR
+                    FOUNDER'S CHOICE
                   </span>
                 </div>
               )}
@@ -92,12 +95,15 @@ const Pricing = () => {
                   <ButtonCheckout priceId={plan.priceId} />
 
                   <p className="flex items-center justify-center gap-2 text-sm text-center text-base-content/80 font-medium relative">
-                    Pay once. Access forever.
+                    No BS. No Limits. Just Launch.
                   </p>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+        <div className="text-center mt-8 text-xs opacity-60">
+          Radical transparency: We believe in pricing that empowers, not restricts.
         </div>
       </div>
     </section>
