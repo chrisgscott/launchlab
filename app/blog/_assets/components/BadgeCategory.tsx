@@ -1,26 +1,32 @@
-import Link from "next/link";
-import { categoryType } from "../content";
+import React from 'react';
+import Link from 'next/link';
+import type { categoryType } from '../content';
 
-// This is the category badge that appears in the article page and in <CardArticle /> component
-const Category = ({
-  category,
-  extraStyle,
-}: {
+interface BadgeCategoryProps {
   category: categoryType;
-  extraStyle?: string;
-}) => {
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const BadgeCategory: React.FC<BadgeCategoryProps> = ({ category, size = 'md' }) => {
+  if (!category) {
+    return null;
+  }
+
+  const sizeClasses = {
+    sm: 'text-xs px-2 py-1',
+    md: 'text-sm px-3 py-1',
+    lg: 'text-base px-4 py-2',
+  };
+
   return (
     <Link
       href={`/blog/category/${category.slug}`}
-      className={`badge badge-sm md:badge-md hover:badge-primary ${
-        extraStyle ? extraStyle : ""
-      }`}
-      title={`Posts in ${category.title}`}
-      rel="tag"
+      title={`View all ${category.title} posts`}
+      className={`badge badge-outline hover:badge-primary ${sizeClasses[size]}`}
     >
-      {category.titleShort}
+      {category.titleShort || category.title}
     </Link>
   );
 };
 
-export default Category;
+export default BadgeCategory;

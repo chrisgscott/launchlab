@@ -1,17 +1,27 @@
-import Link from "next/link";
-import Script from "next/script";
-import { articles } from "../_assets/content";
-import BadgeCategory from "../_assets/components/BadgeCategory";
-import Avatar from "../_assets/components/Avatar";
-import { getSEOTags } from "@/libs/seo";
-import config from "@/config";
+import Link from 'next/link';
+import Script from 'next/script';
+import { articles } from '../_assets/content';
+import BadgeCategory from '../_assets/components/BadgeCategory';
+import Avatar from '../_assets/components/Avatar';
+import { getSEOTags } from '@/libs/seo';
+import config from '@/config';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 export async function generateMetadata({
   params,
 }: {
   params: { articleId: string };
-}) {
-  const article = articles.find((article) => article.slug === params.articleId);
+}): Promise<Metadata> {
+  const article = articles.find(article => article.slug === params.articleId);
+
+  if (!article) {
+    return getSEOTags({
+      title: 'Article Not Found',
+      description: 'The requested article could not be found.',
+      canonicalUrlRelative: `/blog/${params.articleId}`,
+    });
+  }
 
   return getSEOTags({
     title: article.title,
@@ -29,31 +39,27 @@ export async function generateMetadata({
             height: 660,
           },
         ],
-        locale: "en_US",
-        type: "website",
+        locale: 'en_US',
+        type: 'website',
       },
     },
   });
 }
 
-export default async function Article({
-  params,
-}: {
-  params: { articleId: string };
-}) {
-  const article = articles.find((article) => article.slug === params.articleId);
+export default async function Article({ params }: { params: { articleId: string } }) {
+  const article = articles.find(article => article.slug === params.articleId);
+
+  if (!article) {
+    notFound();
+  }
+
   const articlesRelated = articles
     .filter(
-      (a) =>
+      a =>
         a.slug !== params.articleId &&
-        a.categories.some((c) =>
-          article.categories.map((c) => c.slug).includes(c.slug)
-        )
+        a.categories.some(c => article.categories.map(c => c.slug).includes(c.slug))
     )
-    .sort(
-      (a, b) =>
-        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf()
-    )
+    .sort((a, b) => new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf())
     .slice(0, 3);
 
   return (
@@ -64,11 +70,11 @@ export default async function Article({
         id={`json-ld-article-${article.slug}`}
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
+            '@context': 'https://schema.org',
+            '@type': 'Article',
             mainEntityOfPage: {
-              "@type": "WebPage",
-              "@id": `https://${config.domainName}/blog/${article.slug}`,
+              '@type': 'WebPage',
+              '@id': `https://${config.domainName}/blog/${article.slug}`,
             },
             name: article.title,
             headline: article.title,
@@ -77,7 +83,7 @@ export default async function Article({
             datePublished: article.publishedAt,
             dateModified: article.publishedAt,
             author: {
-              "@type": "Person",
+              '@type': 'Person',
               name: article.author.name,
             },
           }),
@@ -111,18 +117,14 @@ export default async function Article({
         {/* HEADER WITH CATEGORIES AND DATE AND TITLE */}
         <section className="my-12 md:my-20 max-w-[800px]">
           <div className="flex items-center gap-4 mb-6">
-            {article.categories.map((category) => (
-              <BadgeCategory
-                category={category}
-                key={category.slug}
-                extraStyle="!badge-lg"
-              />
+            {article.categories.map(category => (
+              <BadgeCategory category={category} key={category.slug} size="lg" />
             ))}
             <span className="text-base-content/80" itemProp="datePublished">
-              {new Date(article.publishedAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
+              {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
               })}
             </span>
           </div>
@@ -131,26 +133,20 @@ export default async function Article({
             {article.title}
           </h1>
 
-          <p className="text-base-content/80 md:text-lg max-w-[700px]">
-            {article.description}
-          </p>
+          <p className="text-base-content/80 md:text-lg max-w-[700px]">{article.description}</p>
         </section>
 
         <div className="flex flex-col md:flex-row">
           {/* SIDEBAR WITH AUTHORS AND 3 RELATED ARTICLES */}
           <section className="max-md:pb-4 md:pl-12 max-md:border-b md:border-l md:order-last md:w-72 shrink-0 border-base-content/10">
-            <p className="text-base-content/80 text-sm mb-2 md:mb-3">
-              Posted by
-            </p>
-            <Avatar article={article} />
+            <p className="text-base-content/80 text-sm mb-2 md:mb-3">Posted by</p>
+            <Avatar author={article.author} size={48} />
 
             {articlesRelated.length > 0 && (
               <div className="hidden md:block mt-12">
-                <p className=" text-base-content/80 text-sm  mb-2 md:mb-3">
-                  Related reading
-                </p>
+                <p className=" text-base-content/80 text-sm  mb-2 md:mb-3">Related reading</p>
                 <div className="space-y-2 md:space-y-5">
-                  {articlesRelated.map((article) => (
+                  {articlesRelated.map(article => (
                     <div className="" key={article.slug}>
                       <p className="mb-0.5">
                         <Link

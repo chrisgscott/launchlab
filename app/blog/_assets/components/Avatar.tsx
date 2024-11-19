@@ -1,28 +1,33 @@
-import Link from "next/link";
-import Image from "next/image";
-import { articleType } from "../content";
+import React from 'react';
+import Image from 'next/image';
+import type { authorType } from '../content';
 
-// This is the author avatar that appears in the article page and in <CardArticle /> component
-const Avatar = ({ article }: { article: articleType }) => {
+interface AvatarProps {
+  author: authorType;
+  size?: number;
+}
+
+const Avatar: React.FC<AvatarProps> = ({ author, size = 40 }) => {
+  if (!author) {
+    return null;
+  }
+
   return (
-    <Link
-      href={`/blog/author/${article.author.slug}`}
-      title={`Posts by ${article.author.name}`}
-      className="inline-flex items-center gap-2 group"
-      rel="author"
-    >
-      <span itemProp="author">
+    <div className="flex items-center gap-4">
+      {author.avatar && (
         <Image
-          src={article.author.avatar}
-          // alt={`Avatar of ${article.author.name}`}
-          alt=""
-          className="w-7 h-7 rounded-full object-cover object-center"
-          width={28}
-          height={28}
+          src={author.avatar}
+          alt={`Avatar of ${author.name}`}
+          width={size}
+          height={size}
+          className="rounded-full"
         />
-      </span>
-      <span className="group-hover:underline">{article.author.name}</span>
-    </Link>
+      )}
+      <div>
+        <p className="font-medium">{author.name}</p>
+        {author.job && <p className="text-base-content/80 text-sm">{author.job}</p>}
+      </div>
+    </div>
   );
 };
 

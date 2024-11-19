@@ -1,7 +1,7 @@
-import type { JSX } from "react";
-import Image, { StaticImageData } from "next/image";
-import marcImg from "@/app/blog/_assets/images/authors/marc.png";
-import introducingSupabaseImg from "@/public/blog/introducing-supabase/header.png";
+import type { JSX } from 'react';
+import Image, { StaticImageData } from 'next/image';
+import marcImg from '@/app/blog/_assets/images/authors/marc.png';
+import introducingSupabaseImg from '@/public/blog/introducing-supabase/header.png';
 
 // ==================================================================================================================================================================
 // BLOG CATEGORIES 🏷️
@@ -17,8 +17,8 @@ export type categoryType = {
 
 // These slugs are used to generate pages in the /blog/category/[categoryI].js. It's a way to group articles by category.
 const categorySlugs: { [key: string]: string } = {
-  feature: "feature",
-  tutorial: "tutorial",
+  feature: 'feature',
+  tutorial: 'tutorial',
 };
 
 // All the blog categories data display in the /blog/category/[categoryI].js pages.
@@ -27,23 +27,22 @@ export const categories: categoryType[] = [
     // The slug to use in the URL, from the categorySlugs object above.
     slug: categorySlugs.feature,
     // The title to display the category title (h1), the category badge, the category filter, and more. Less than 60 characters.
-    title: "New Features",
+    title: 'New Features',
     // A short version of the title above, display in small components like badges. 1 or 2 words
-    titleShort: "Features",
+    titleShort: 'Features',
     // The description of the category to display in the category page. Up to 160 characters.
     description:
       "Here are the latest features we've added to ShipFast. I'm constantly improving our product to help you ship faster.",
     // A short version of the description above, only displayed in the <Header /> on mobile. Up to 60 characters.
-    descriptionShort: "Latest features added to ShipFast.",
+    descriptionShort: 'Latest features added to ShipFast.',
   },
   {
     slug: categorySlugs.tutorial,
-    title: "How Tos & Tutorials",
-    titleShort: "Tutorials",
+    title: 'How Tos & Tutorials',
+    titleShort: 'Tutorials',
     description:
       "Learn how to use ShipFast with these step-by-step tutorials. I'll show you how to ship faster and save time.",
-    descriptionShort:
-      "Learn how to use ShipFast with these step-by-step tutorials.",
+    descriptionShort: 'Learn how to use ShipFast with these step-by-step tutorials.',
   },
 ];
 
@@ -72,7 +71,7 @@ const socialIcons: {
   };
 } = {
   twitter: {
-    name: "Twitter",
+    name: 'Twitter',
     svg: (
       <svg
         version="1.1"
@@ -93,7 +92,7 @@ const socialIcons: {
     ),
   },
   linkedin: {
-    name: "LinkedIn",
+    name: 'LinkedIn',
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +105,7 @@ const socialIcons: {
     ),
   },
   github: {
-    name: "GitHub",
+    name: 'GitHub',
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +123,7 @@ const socialIcons: {
 const authorSlugs: {
   [key: string]: string;
 } = {
-  marc: "marc",
+  marc: 'marc',
 };
 
 // All the blog authors data display in the /blog/author/[authorId].js pages.
@@ -133,9 +132,9 @@ export const authors: authorType[] = [
     // The slug to use in the URL, from the authorSlugs object above.
     slug: authorSlugs.marc,
     // The name to display in the author's bio. Up to 60 characters.
-    name: "Marc Lou",
+    name: 'Marc Lou',
     // The job to display in the author's bio. Up to 60 characters.
-    job: "Maker of ByeDispute",
+    job: 'Maker of ByeDispute',
     // The description of the author to display in the author's bio. Up to 160 characters.
     description:
       "Marc is a developer and an entrepreneur. He's built 20 startups in the last 3 years. 6 were profitable and 3 were acquired. He's currently building ByeDispute, the #1 Stripe Chargebacks Protection tool.",
@@ -146,17 +145,17 @@ export const authors: authorType[] = [
       {
         name: socialIcons.twitter.name,
         icon: socialIcons.twitter.svg,
-        url: "https://twitter.com/marc_louvion",
+        url: 'https://twitter.com/marc_louvion',
       },
       {
         name: socialIcons.linkedin.name,
         icon: socialIcons.linkedin.svg,
-        url: "https://www.linkedin.com/in/marclouvion/",
+        url: 'https://www.linkedin.com/in/marclouvion/',
       },
       {
         name: socialIcons.github.name,
         icon: socialIcons.github.svg,
-        url: "https://github.com/Marc-Lou-Org/ship-fast",
+        url: 'https://github.com/Marc-Lou-Org/ship-fast',
       },
     ],
   },
@@ -185,41 +184,40 @@ export type articleType = {
 const styles: {
   [key: string]: string;
 } = {
-  h2: "text-2xl lg:text-4xl font-bold tracking-tight mb-4 text-base-content",
-  h3: "text-xl lg:text-2xl font-bold tracking-tight mb-2 text-base-content",
-  p: "text-base-content/90 leading-relaxed",
-  ul: "list-inside list-disc text-base-content/90 leading-relaxed",
-  li: "list-item",
+  h2: 'text-2xl lg:text-4xl font-bold tracking-tight mb-4 text-base-content',
+  h3: 'text-xl lg:text-2xl font-bold tracking-tight mb-2 text-base-content',
+  p: 'text-base-content/90 leading-relaxed',
+  ul: 'list-inside list-disc text-base-content/90 leading-relaxed',
+  li: 'list-item',
   // Altnernatively, you can use the library react-syntax-highlighter to display code snippets.
-  code: "text-sm font-mono bg-neutral text-neutral-content p-6 rounded-box my-4 overflow-x-scroll select-all",
-  codeInline:
-    "text-sm font-mono bg-base-300 px-1 py-0.5 rounded-box select-all",
+  code: 'text-sm font-mono bg-neutral text-neutral-content p-6 rounded-box my-4 overflow-x-scroll select-all',
+  codeInline: 'text-sm font-mono bg-base-300 px-1 py-0.5 rounded-box select-all',
 };
 
 // All the blog articles data display in the /blog/[articleId].js pages.
 export const articles: articleType[] = [
   {
     // The unique slug to use in the URL. It's also used to generate the canonical URL.
-    slug: "introducing-supabase",
+    slug: 'introducing-supabase',
     // The title to display in the article page (h1). Less than 60 characters. It's also used to generate the meta title.
-    title: "Introducing Supabase to ShipFast",
+    title: 'Introducing Supabase to ShipFast',
     // The description of the article to display in the article page. Up to 160 characters. It's also used to generate the meta description.
     description:
       "Supabase is an open-source Firebase alternative. It's a great tool for building a backend for your app. It's now integrated with ShipFast!",
     // An array of categories of the article. It's used to generate the category badges, the category filter, and more.
     categories: [
-      categories.find((category) => category.slug === categorySlugs.feature),
+      categories.find(category => category.slug === categorySlugs.feature) ?? categories[0],
     ],
     // The author of the article. It's used to generate a link to the author's bio page.
-    author: authors.find((author) => author.slug === authorSlugs.marc),
+    author: authors.find(author => author.slug === authorSlugs.marc) ?? authors[0],
     // The date of the article. It's used to generate the meta date.
-    publishedAt: "2023-11-20",
+    publishedAt: '2023-11-20',
     image: {
       // The image to display in <CardArticle /> components.
       src: introducingSupabaseImg,
       // The relative URL of the same image to use in the Open Graph meta tags & the Schema Markup JSON-LD. It should be the same image as the src above.
-      urlRelative: "/blog/introducing-supabase/header.jpg",
-      alt: "Supabase and ShipFast logo combined",
+      urlRelative: '/blog/introducing-supabase/header.jpg',
+      alt: 'Supabase and ShipFast logo combined',
     },
     // The actual content of the article that will be shown under the <h1> title in the article page.
     content: (
@@ -236,24 +234,21 @@ export const articles: articleType[] = [
         <section>
           <h2 className={styles.h2}>Introduction</h2>
           <p className={styles.p}>
-            Supabase is an open-source Firebase alternative. It&apos;s a great
-            tool for building a backend for your app. It&apos;s now integrated
-            with ShipFast!
+            Supabase is an open-source Firebase alternative. It&apos;s a great tool for building a
+            backend for your app. It&apos;s now integrated with ShipFast!
           </p>
         </section>
 
         <section>
           <h3 className={styles.h3}>1. Create a supabase account</h3>
           <p className={styles.p}>
-            First, go to{" "}
+            First, go to{' '}
             <a href="https://supabase.com/" className="link link-primary">
               Supabase
-            </a>{" "}
-            and create an account. It&apos;s free for up to 10,000 rows per
-            table.
+            </a>{' '}
+            and create an account. It&apos;s free for up to 10,000 rows per table.
             <br />
-            Then create a new project and a new table. You can use the following
-            SQL schema:
+            Then create a new project and a new table. You can use the following SQL schema:
           </p>
 
           <pre className={styles.code}>
@@ -273,10 +268,9 @@ export const articles: articleType[] = [
         <section>
           <h3 className={styles.h3}>2. Add your credentials to ShipFast</h3>
           <p className={styles.p}>
-            Copy the <span className={styles.codeInline}>API URL</span> and{" "}
-            <span className={styles.codeInline}>API Key</span> from your
-            Supabase project settings and add them to your ShipFast project
-            settings. Add these files to your project:
+            Copy the <span className={styles.codeInline}>API URL</span> and{' '}
+            <span className={styles.codeInline}>API Key</span> from your Supabase project settings
+            and add them to your ShipFast project settings. Add these files to your project:
           </p>
 
           <ul className={styles.ul}>
