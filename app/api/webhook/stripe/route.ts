@@ -1,4 +1,6 @@
+// @ts-ignore
 import configFile from '@/config';
+// @ts-ignore
 import { findCheckoutSession } from '@/libs/stripe';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { headers } from 'next/headers';

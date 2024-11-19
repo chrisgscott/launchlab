@@ -15,6 +15,7 @@
     "isolatedModules": true,
     "noImplicitAny": true,
     "jsx": "preserve",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
@@ -25,6 +26,14 @@
     ],
     "strictNullChecks": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts",
+    "config.ts",
+    "libs/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
