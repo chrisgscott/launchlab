@@ -2,10 +2,17 @@
 import configFile from '@/config';
 // @ts-ignore
 import { findCheckoutSession } from '@/libs/stripe';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+
+interface Profile {
+  id: string;
+  email: string;
+  customer_id?: string;
+  [key: string]: any;
+}
 
 // Ensure required environment variables are set
 const getStripeInstance = (): Stripe => {
@@ -57,7 +64,14 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabaseClient();
 
     // Verify Stripe event is legit
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error verifying webhook:', error.message);
+      return NextResponse.json({ error: `Webhook Error: ${error.message}` }, { status: 400 });
+    }
 
     const eventType = event.type;
 
@@ -107,7 +121,7 @@ export async function POST(req: NextRequest) {
             break;
           }
 
-          let user;
+          let user: Profile | null = null;
           if (!userId) {
             // check if user already exists
             const { data: profile, error } = await supabase
@@ -121,7 +135,7 @@ export async function POST(req: NextRequest) {
             }
 
             if (profile) {
-              user = profile;
+              user = profile as Profile;
             } else {
               // create a new user using supabase auth admin
               const { data, error: createUserError } = await supabase.auth.admin.createUser({
@@ -133,7 +147,7 @@ export async function POST(req: NextRequest) {
                 throw new Error(`Failed to create user: ${createUserError.message}`);
               }
 
-              user = data?.user;
+              user = data?.user as unknown as Profile;
             }
           } else {
             // find user by ID
@@ -147,7 +161,7 @@ export async function POST(req: NextRequest) {
               throw new Error(`Failed to fetch user profile: ${fetchUserError.message}`);
             }
 
-            user = profile;
+            user = profile as Profile;
           }
 
           if (!user?.id) {
