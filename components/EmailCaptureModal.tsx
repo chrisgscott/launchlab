@@ -53,7 +53,6 @@ export default function EmailCaptureModal({
           templateId: EmailTemplateId.VALIDATION_REPORT,
           params: {
             reportUrl,
-            businessName: insights.businessName,
             score: insights.score,
           },
         }),

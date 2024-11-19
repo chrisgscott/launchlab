@@ -7,7 +7,6 @@ export const EmailTemplateId = {
 export type TemplateParams = {
   [EmailTemplateId.VALIDATION_REPORT]: {
     reportUrl: string;
-    businessName: string;
     score: number;
   };
 };
@@ -31,11 +30,7 @@ export function validateTemplateParams(
 ): boolean {
   switch (templateId) {
     case EmailTemplateId.VALIDATION_REPORT:
-      return (
-        typeof params.reportUrl === 'string' &&
-        typeof params.businessName === 'string' &&
-        typeof params.score === 'number'
-      );
+      return typeof params.reportUrl === 'string' && typeof params.score === 'number';
     default:
       return false;
   }
