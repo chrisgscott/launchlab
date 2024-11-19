@@ -12,7 +12,7 @@ insert into idea_analyses (
     'AI-powered weekly meal plans with smart shopping lists and carbon footprint tracking.',
     '{
         "totalScore": 78,
-        "launchStatus": "READY FOR LIFTOFF",
+        "validationStatus": "READY TO VALIDATE",
         "marketOpportunity": {
             "score": 85,
             "insights": [
