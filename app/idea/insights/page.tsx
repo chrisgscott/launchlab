@@ -141,7 +141,7 @@ export default function InsightsPage() {
     return (
       <div
         key={category.key}
-        className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+        className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border-t-4 border-${statusColor} mb-8"
       >
         <div className={`card-body p-0`}>
           <div className={`p-4 rounded-t-xl border-b ${getScoreColor(score)}`}>
@@ -337,12 +337,15 @@ export default function InsightsPage() {
       </div>
 
       {/* Email Capture Modal */}
-      <EmailCaptureModal
-        isOpen={showEmailModal}
-        onClose={() => setShowEmailModal(false)}
-        analysisId={analysis?.id || ''}
-        onSuccess={handleEmailSuccess}
-      />
+      {showEmailModal && (
+        <EmailCaptureModal
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          analysisId={analysis.id}
+          onSuccess={handleEmailSuccess}
+          insights={insights}
+        />
+      )}
     </div>
   );
 }
