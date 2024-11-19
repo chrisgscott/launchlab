@@ -1,6 +1,11 @@
 import * as SibApiV3Sdk from 'sib-api-v3-sdk';
-import config from '@/config';
-import { EmailTemplateId, TemplateParams, validateTemplateParams, getTemplateDescription } from './email-templates';
+import config from '../config';
+import {
+  EmailTemplateId,
+  TemplateParams,
+  validateTemplateParams,
+  getTemplateDescription,
+} from './email-templates';
 
 // Custom error classes for better error handling
 export class BrevoError extends Error {
@@ -33,14 +38,14 @@ export class BrevoNetworkError extends BrevoError {
 
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
+apiKey.apiKey = process.env.BREVO_API_KEY || '';
 
 // Create a reusable transactional email API instance
 const emailApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
-if (!process.env.BREVO_API_KEY && process.env.NODE_ENV === "development") {
-  console.group("⚠️ BREVO_API_KEY missing from .env");
-  console.log("Add it to your .env file to enable email sending.");
+if (!process.env.BREVO_API_KEY && process.env.NODE_ENV === 'development') {
+  console.group('⚠️ BREVO_API_KEY missing from .env');
+  console.log('Add it to your .env file to enable email sending.');
   console.error("If you don't need it, remove the code from /libs/brevo.ts");
   console.groupEnd();
 }
@@ -78,7 +83,7 @@ export async function sendEmail({
     }
 
     sendSmtpEmail.to = toEmails;
-    
+
     if (templateId) {
       sendSmtpEmail.templateId = templateId;
       if (templateParams) {
@@ -97,9 +102,7 @@ export async function sendEmail({
     };
 
     if (replyTo) {
-      sendSmtpEmail.replyTo = typeof replyTo === 'string' 
-        ? { email: replyTo }
-        : replyTo;
+      sendSmtpEmail.replyTo = typeof replyTo === 'string' ? { email: replyTo } : replyTo;
     }
 
     const response = await emailApi.sendTransacEmail(sendSmtpEmail);
@@ -117,7 +120,7 @@ export async function sendEmail({
         throw new BrevoNetworkError(error);
       }
     }
-    
+
     // Log the error for debugging
     console.error('Error sending email:', error);
     throw error;
