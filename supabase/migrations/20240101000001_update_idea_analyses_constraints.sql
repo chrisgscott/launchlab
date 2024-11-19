@@ -8,7 +8,7 @@ alter table idea_analyses add constraint insights_structure_check check (
   insights ? 'marketTiming' and
   insights ? 'scalability' and
   insights ? 'totalScore' and
-  insights ? 'launchStatus' and
+  insights ? 'validationStatus' and
   insights ? 'criticalIssues' and
   insights ? 'nextSteps'
 );
