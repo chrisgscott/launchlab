@@ -1,5 +1,4 @@
-import * as SibApiV3Sdk from 'sib-api-v3-sdk';
-import config from '../config';
+// @ts-ignore
 import {
   EmailTemplateId,
   TemplateParams,
@@ -15,16 +14,9 @@ export class BrevoError extends Error {
   }
 }
 
-export class BrevoTemplateError extends BrevoError {
-  constructor(templateId: number) {
-    super(`Template with ID ${templateId} not found or is invalid`);
-    this.name = 'BrevoTemplateError';
-  }
-}
-
 export class BrevoRateLimitError extends BrevoError {
   constructor() {
-    super('API rate limit exceeded. Please try again later.');
+    super('Rate limit exceeded');
     this.name = 'BrevoRateLimitError';
   }
 }
@@ -36,18 +28,13 @@ export class BrevoNetworkError extends BrevoError {
   }
 }
 
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY || '';
+const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
+const BREVO_API_URL = 'https://api.brevo.com/v3';
 
-// Create a reusable transactional email API instance
-const emailApi = new SibApiV3Sdk.TransactionalEmailsApi();
-
-if (!process.env.BREVO_API_KEY && process.env.NODE_ENV === 'development') {
-  console.group('⚠️ BREVO_API_KEY missing from .env');
-  console.log('Add it to your .env file to enable email sending.');
-  console.error("If you don't need it, remove the code from /libs/brevo.ts");
-  console.groupEnd();
+// Helper function to validate email format
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 interface SendEmailOptions {
@@ -60,6 +47,21 @@ interface SendEmailOptions {
   replyTo?: string | { email: string; name?: string };
 }
 
+interface EmailData {
+  to: { email: string; name?: string }[];
+  templateId?: number;
+  params?: Record<string, any>;
+  subject?: string;
+  htmlContent?: string;
+  textContent?: string;
+  sender: {
+    email: string;
+    name: string;
+  };
+  replyTo?: { email: string; name?: string };
+}
+
+// Function to send emails
 export async function sendEmail({
   to,
   subject,
@@ -70,8 +72,6 @@ export async function sendEmail({
   replyTo,
 }: SendEmailOptions) {
   try {
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-
     // Convert to array if single email
     const toEmails = Array.isArray(to) ? to : [{ email: to }];
 
@@ -82,73 +82,135 @@ export async function sendEmail({
       }
     }
 
-    sendSmtpEmail.to = toEmails;
+    const emailData: EmailData = {
+      to: toEmails,
+      sender: {
+        email: 'hello@uselaunchlab.com', // Replace with your from email
+        name: 'Chris at UseLaunchLab', // Replace with your name
+      },
+    };
 
     if (templateId) {
-      sendSmtpEmail.templateId = templateId;
+      emailData.templateId = templateId;
       if (templateParams) {
-        sendSmtpEmail.params = templateParams;
+        emailData.params = templateParams;
       }
     } else {
       if (!subject) throw new BrevoError('Subject is required when not using a template');
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = html;
-      sendSmtpEmail.textContent = text;
+      emailData.subject = subject;
+      emailData.htmlContent = html;
+      emailData.textContent = text;
     }
-
-    sendSmtpEmail.sender = {
-      email: config.email.fromEmail,
-      name: config.email.fromName,
-    };
 
     if (replyTo) {
-      sendSmtpEmail.replyTo = typeof replyTo === 'string' ? { email: replyTo } : replyTo;
+      emailData.replyTo = typeof replyTo === 'string' ? { email: replyTo } : replyTo;
     }
 
-    const response = await emailApi.sendTransacEmail(sendSmtpEmail);
-    return response;
+    const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new BrevoError(`Failed to send email: ${error.message || 'Unknown error'}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    // Handle specific error cases
     if (error instanceof Error) {
       if (error.message.includes('rate limit')) {
         throw new BrevoRateLimitError();
-      }
-      if (error.message.includes('template')) {
-        throw new BrevoTemplateError(templateId!);
       }
       if (error.message.includes('network') || error.message.includes('ECONNREFUSED')) {
         throw new BrevoNetworkError(error);
       }
     }
-
-    // Log the error for debugging
-    console.error('Error sending email:', error);
     throw error;
   }
 }
 
-// Helper function to validate email addresses
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
 // Type-safe function to send template-based emails
-export async function sendTemplateEmail<T extends EmailTemplateId>(
-  templateId: T,
-  to: string | { email: string; name?: string }[],
-  params: TemplateParams[T]
-) {
-  // Validate template parameters
-  if (!validateTemplateParams(templateId, params)) {
-    throw new BrevoError(`Invalid parameters for template: ${getTemplateDescription(templateId)}`);
-  }
+export async function sendTemplateEmail(
+  templateId: number,
+  to: string,
+  params: Record<string, any>
+): Promise<void> {
+  try {
+    const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        templateId,
+        to: [{ email: to }],
+        params,
+      }),
+    });
 
-  return sendEmail({
-    to,
-    templateId,
-    templateParams: params,
-  });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new BrevoError(`Failed to send email: ${error.message || 'Unknown error'}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('rate limit')) {
+        throw new BrevoRateLimitError();
+      }
+      if (error.message.includes('network') || error.message.includes('ECONNREFUSED')) {
+        throw new BrevoNetworkError(error);
+      }
+    }
+    throw error;
+  }
 }
 
-export default { sendEmail, sendTemplateEmail };
+// Subscribe an email to a list
+export async function subscribeToList(email: string, listId: number) {
+  try {
+    const response = await fetch(`${BREVO_API_URL}/contacts`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        email,
+        listIds: [listId],
+        updateEnabled: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new BrevoError(`Failed to subscribe to list: ${error.message || 'Unknown error'}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('duplicate')) {
+        // Contact already exists, not necessarily an error
+        return null;
+      }
+      if (error.message.includes('rate limit')) {
+        throw new BrevoRateLimitError();
+      }
+      if (error.message.includes('network') || error.message.includes('ECONNREFUSED')) {
+        throw new BrevoNetworkError(error);
+      }
+    }
+    throw error;
+  }
+}
+
+export default { sendEmail, sendTemplateEmail, subscribeToList };

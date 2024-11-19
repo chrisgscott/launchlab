@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClient } from '@/libs/supabase/client';
 import { XCircle, Mail, ArrowRight } from 'lucide-react';
+import { EmailTemplateId } from '@/libs/email-templates';
 
 interface EmailCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
   analysisId: string;
-  onSuccess: (token: string) => void;
+  onSuccess: () => void;
+  insights: any; // TODO: Type this properly
 }
 
 export default function EmailCaptureModal({
@@ -16,6 +17,7 @@ export default function EmailCaptureModal({
   onClose,
   analysisId,
   onSuccess,
+  insights,
 }: EmailCaptureModalProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,30 +31,49 @@ export default function EmailCaptureModal({
     setError(null);
 
     try {
-      const supabase = createClient();
+      // Create access token for the report
+      const response = await fetch('/api/idea/report-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-      // Store email and create access token
-      const { data, error: dbError } = await supabase
-        .from('report_access')
-        .insert([
-          {
-            email,
-            analysis_id: analysisId,
-            access_token: crypto.randomUUID(), // Generate unique token
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+      if (!response.ok) throw new Error('Failed to create report access');
+      const { token } = await response.json();
+
+      // Generate the report URL
+      const reportUrl = `${window.location.origin}/idea/report/${token}`;
+
+      // Send the validation report email
+      await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          templateId: EmailTemplateId.VALIDATION_REPORT,
+          params: {
+            reportUrl,
+            businessName: insights.businessName,
+            score: insights.score,
           },
-        ])
-        .select('access_token')
-        .single();
+        }),
+      });
 
-      if (dbError) throw dbError;
+      // Subscribe to the mailing list
+      await fetch('/api/email/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          listId: 7,
+        }),
+      });
 
-      // Call success callback with access token
-      onSuccess(data.access_token);
+      setIsSubmitting(false);
+      onSuccess();
     } catch (err) {
-      console.error('Error saving email:', err);
-      setError('Failed to save email. Please try again.');
-    } finally {
+      console.error('Error:', err);
+      setError('Failed to send report. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -102,23 +123,17 @@ export default function EmailCaptureModal({
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={isSubmitting || !email}
-              className={`
-                btn btn-primary w-full
-                ${isSubmitting ? 'loading' : ''}
-              `}
-            >
-              {isSubmitting ? 'Generating Report...' : 'Get Full Report'}
-              {!isSubmitting && <ArrowRight className="w-5 h-5 ml-2" />}
+            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <>
+                  Send Me the Report
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
-
-          <p className="text-xs text-center mt-4 text-base-content/50">
-            We&apos;ll only use your email to send you the report and important updates about your
-            idea.
-          </p>
         </div>
       </div>
     </div>
