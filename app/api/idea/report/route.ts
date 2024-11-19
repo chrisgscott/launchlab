@@ -94,9 +94,9 @@ const REPORT_SCHEMA = {
         description: 'Potential risks and challenges to address',
         items: { type: 'string' },
       },
-      launchStatus: {
+      validationStatus: {
         type: 'string',
-        enum: ['READY FOR LIFTOFF', 'PREFLIGHT CHECKS NEEDED', 'MISSION SCRUBBED'],
+        enum: ['READY TO VALIDATE', 'NEEDS REFINEMENT', 'MAJOR CONCERNS'],
         description: 'Overall validation status based on total score',
       },
       criticalIssues: {
@@ -139,7 +139,7 @@ const REPORT_SCHEMA = {
       'totalScore',
       'marketOpportunities',
       'risks',
-      'launchStatus',
+      'validationStatus',
       'criticalIssues',
       'nextStepsReport',
     ],
@@ -225,16 +225,16 @@ Calculate a validation readiness score out of 100 based on:
 - Ease of initial validation (25%)
 - Market timing and opportunity (25%)
 
-Determine the launch status:
-- 70-100: READY FOR LIFTOFF - Start validation immediately
-- 50-69: PREFLIGHT CHECKS NEEDED - Address key issues first
-- <50: MISSION SCRUBBED - Rethink core assumptions
+Determine the validation status:
+- 70-100: READY TO VALIDATE - Begin validation immediately
+- 50-69: NEEDS REFINEMENT - Address key issues first
+- <50: MAJOR CONCERNS - Rethink core assumptions
 
 Keep your tone:
-✓ Practical and action-oriented
-✓ Encouraging but realistic
-✓ Focused on immediate next steps
-✓ Empowering without sugar-coating
+ Practical and action-oriented
+ Encouraging but realistic
+ Focused on immediate next steps
+ Empowering without sugar-coating
 
 Remember: Your goal is to give them confidence through clarity and concrete action steps. Help them move from "I think this could work" to "I know exactly how to test this."`,
         },

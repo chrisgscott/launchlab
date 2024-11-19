@@ -144,10 +144,10 @@ const ANALYSIS_SCHEMA = {
         type: 'number',
         description: 'Calculated total score out of 100',
       },
-      launchStatus: {
+      validationStatus: {
         type: 'string',
-        enum: ['READY FOR LIFTOFF', 'PREFLIGHT CHECKS NEEDED', 'MISSION SCRUBBED'],
-        description: 'Overall launch status based on total score',
+        enum: ['READY TO VALIDATE', 'NEEDS REFINEMENT', 'MAJOR CONCERNS'],
+        description: 'Overall validation status based on total score',
       },
       criticalIssues: {
         type: 'array',
@@ -183,7 +183,7 @@ const ANALYSIS_SCHEMA = {
       'marketTiming',
       'scalability',
       'totalScore',
-      'launchStatus',
+      'validationStatus',
       'criticalIssues',
       'nextSteps',
     ],

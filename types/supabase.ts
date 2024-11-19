@@ -20,7 +20,7 @@ export type NextStep = {
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
 };
 
-export type LaunchStatus = 'READY FOR LIFTOFF' | 'PREFLIGHT CHECKS NEEDED' | 'MISSION SCRUBBED';
+export type ValidationStatus = 'READY TO VALIDATE' | 'NEEDS REFINEMENT' | 'MAJOR CONCERNS';
 
 export type AnalysisInsights = {
   // Idea Refinement & Positioning
@@ -47,7 +47,7 @@ export type AnalysisInsights = {
   totalScore: number;
   marketOpportunities: string[];
   risks: string[];
-  launchStatus: LaunchStatus;
+  validationStatus: ValidationStatus;
   criticalIssues: CriticalIssue[];
   nextStepsReport: NextStep[];
 };
