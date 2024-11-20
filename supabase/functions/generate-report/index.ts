@@ -1,6 +1,5 @@
 /// <reference lib="deno.ns" />
 
-// Follow Deno and Edge Function conventions
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import OpenAI from 'https://esm.sh/openai@4.20.1';
@@ -120,24 +119,33 @@ Value Proposition: ${analysis.unique_value_proposition}
 Product Description: ${analysis.product_description}
 
 Analysis Insights:
-- Market Opportunity: ${analysis.insights.marketOpportunity}
-- Competitive Advantage: ${analysis.insights.competitiveAdvantage}
-- Feasibility: ${analysis.insights.feasibility}
-- Revenue Potential: ${analysis.insights.revenuePotential}
-- Market Timing: ${analysis.insights.marketTiming}
-- Scalability: ${analysis.insights.scalability}
-- Total Score: ${analysis.insights.totalScore}
-- Critical Issues: ${analysis.insights.criticalIssues.join(', ')}
-- Next Steps: ${analysis.insights.nextSteps.join(', ')}
+${JSON.stringify(analysis.insights, null, 2)}
 
-Please provide a comprehensive report that includes:
+Structure the report in two parts:
+
+PART 1 - PREVIEW INSIGHTS
+A high-level overview of the key findings and recommendations.
+
+PART 2 - DETAILED REPORT
+Provide a comprehensive report that includes:
 1. Executive Summary
 2. Market Analysis and Opportunity
 3. Key Strengths and Competitive Advantages
 4. Critical Issues and Challenges
 5. Recommended Next Steps
 6. Timeline and Milestones
-7. Success Metrics and KPIs`;
+7. Success Metrics and KPIs
+8. Detailed Improvement Strategies
+   For each category, provide:
+   - Current strengths (2-3 points)
+   - Areas for improvement (2-3 points)
+   - Comprehensive action plan (5-7 detailed steps)
+   - Expected outcomes
+   - Implementation timeline
+   - Resource requirements
+   - Risk mitigation strategies
+
+Important: Focus on providing detailed, actionable strategies that go beyond the initial analysis.`;
 
     console.log('Using OpenAI model:', openaiModel);
     const completion = await openai.chat.completions.create({
@@ -154,7 +162,7 @@ Please provide a comprehensive report that includes:
         },
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 3500,
     });
 
     const report = completion.choices[0]?.message?.content;

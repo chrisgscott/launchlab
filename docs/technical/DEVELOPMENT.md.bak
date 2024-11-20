@@ -12,56 +12,19 @@
 
 Last Updated: 2024-11-20
 
-### Current Development Focus
-
-- **Business Blueprint Generation**
-
-  - Status: Active Development
-  - Priority: High
-  - Dependencies: OpenAI API, Brevo API, Supabase
-  - Components:
-    - Generating detailed business blueprint/report
-    - Saving reports to database
-    - Creating unique, secure access links
-    - Frontend report display
-    - Email list signup via Brevo
-    - Email delivery system
-  - Recent Updates:
-    - Moved improvement tips generation to initial analysis phase
-    - Enhanced insights display with AI-generated improvement tips
-    - Streamlined report generation process
-    - Updated EmailCaptureModal with proper TypeScript types
-
-- **Landing Page Builder**
-
-  - Status: In Planning
-  - Priority: High
-  - Dependencies: None
-  - Notes: Will need to integrate with existing UI components and design system
-
-- **Documentation System**
-  - Status: Active
-  - Priority: High
-  - Dependencies: None
-  - Recent Updates:
-    - Added automated DEVELOPMENT.md update workflow
-    - Reorganized documentation structure
-    - Implemented git hooks for maintaining documentation
-
 ### Active Features
 
-- Business Blueprint Generation
-- Insights Dashboard
-- Idea Analysis Flow
+- **Idea Analysis Flow**
+  - Multi-step form for idea input (`/idea`)
+  - AI-powered analysis
+  - Insights page with detailed breakdown (`/idea/insights`)
+  - Email report generation
 
 ### Recent Changes
 
-- Optimized insights generation workflow
-- Updated EmailCaptureModal component with proper TypeScript types
-- Refactored report generation to use initial analysis data
-- Reorganized documentation structure
-- Updated product roadmap
-- Created documentation update workflow and scripts
+- Fixed TypeScript issues in EmailCaptureModal component
+- Added subtle borders to idea page cards
+- Created stable-insights branch from working commit
 
 ### Architecture Overview
 
@@ -69,7 +32,7 @@ Last Updated: 2024-11-20
 - **Styling**: TailwindCSS + DaisyUI
 - **Backend**: Supabase
 - **AI**: OpenAI integration using gpt-4o-mini-2024-07-18 model (optimized for performance and cost)
-- **Email**: Brevo
+- **Email**: Mailgun
 
 For detailed technical information about each component, please refer to:
 
@@ -104,9 +67,8 @@ See the [Environment Setup Guide](./environment-setup.md) for a complete list of
 
 ### Known Issues
 
-- None currently
+- None currently tracked
 
 ### Next Steps
 
-- Set up User Account System
-- Implement Landing Page Builder
+- TBD based on upcoming features

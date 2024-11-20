@@ -22,6 +22,15 @@ export type NextStep = {
 
 export type ValidationStatus = 'READY TO VALIDATE' | 'NEEDS REFINEMENT' | 'MAJOR CONCERNS';
 
+export type CategoryInsights = {
+  score: number;
+  insights: Array<{
+    title: string;
+    description: string;
+    actionSteps?: string[];
+  }>;
+};
+
 export type AnalysisInsights = {
   // Idea Refinement & Positioning
   oneLiner: string;

@@ -40,8 +40,15 @@ const ANALYSIS_SCHEMA = {
               required: ['title', 'description'],
             },
           },
+          improvementTips: {
+            type: 'array',
+            description: 'Three brief, actionable tips for improvement',
+            items: { type: 'string' },
+            minItems: 3,
+            maxItems: 3,
+          },
         },
-        required: ['score', 'insights'],
+        required: ['score', 'insights', 'improvementTips'],
       },
       competitiveAdvantage: {
         type: 'object',
@@ -59,8 +66,15 @@ const ANALYSIS_SCHEMA = {
               required: ['title', 'description'],
             },
           },
+          improvementTips: {
+            type: 'array',
+            description: 'Three brief, actionable tips for improvement',
+            items: { type: 'string' },
+            minItems: 3,
+            maxItems: 3,
+          },
         },
-        required: ['score', 'insights'],
+        required: ['score', 'insights', 'improvementTips'],
       },
       feasibility: {
         type: 'object',
@@ -78,8 +92,15 @@ const ANALYSIS_SCHEMA = {
               required: ['title', 'description'],
             },
           },
+          improvementTips: {
+            type: 'array',
+            description: 'Three brief, actionable tips for improvement',
+            items: { type: 'string' },
+            minItems: 3,
+            maxItems: 3,
+          },
         },
-        required: ['score', 'insights'],
+        required: ['score', 'insights', 'improvementTips'],
       },
       // Supporting Factors (40% of total)
       revenuePotential: {
@@ -98,8 +119,15 @@ const ANALYSIS_SCHEMA = {
               required: ['title', 'description'],
             },
           },
+          improvementTips: {
+            type: 'array',
+            description: 'Three brief, actionable tips for improvement',
+            items: { type: 'string' },
+            minItems: 3,
+            maxItems: 3,
+          },
         },
-        required: ['score', 'insights'],
+        required: ['score', 'insights', 'improvementTips'],
       },
       marketTiming: {
         type: 'object',
@@ -117,8 +145,15 @@ const ANALYSIS_SCHEMA = {
               required: ['title', 'description'],
             },
           },
+          improvementTips: {
+            type: 'array',
+            description: 'Three brief, actionable tips for improvement',
+            items: { type: 'string' },
+            minItems: 3,
+            maxItems: 3,
+          },
         },
-        required: ['score', 'insights'],
+        required: ['score', 'insights', 'improvementTips'],
       },
       scalability: {
         type: 'object',
@@ -136,8 +171,15 @@ const ANALYSIS_SCHEMA = {
               required: ['title', 'description'],
             },
           },
+          improvementTips: {
+            type: 'array',
+            description: 'Three brief, actionable tips for improvement',
+            items: { type: 'string' },
+            minItems: 3,
+            maxItems: 3,
+          },
         },
-        required: ['score', 'insights'],
+        required: ['score', 'insights', 'improvementTips'],
       },
       // Overall Analysis
       totalScore: {
@@ -247,19 +289,15 @@ Supporting Factors (40% of total):
 
 For each factor:
 1. Score it 0-100 (0=Needs serious work, 100=Absolutely crushing it)
-2. For scores of 50 or below, provide:
-   - What's holding this factor back
-   - Specific actions to improve the score
-   - Examples or suggestions when relevant
-3. For scores of 51 or above, provide:
-   - What's working well
-   - How to maintain or enhance this strength
-   - Potential risks to watch out for
-
-Your insights for each factor should follow this structure:
-- Current State: What's working/not working
-- Impact: Why this matters for success
-- Action Steps: Specific things to do next
+2. Provide insights that cover:
+   - Current State: What's working/not working
+   - Impact: Why this matters for success
+   - Action Steps: Specific things to do next
+3. Provide exactly 3 improvement tips that are:
+   - One sentence each (15-20 words)
+   - Actionable and specific
+   - Quick wins that hint at deeper strategies
+   - Focused on the most impactful changes first
 
 Calculate a total score out of 100 using the weighted factors and determine the status:
 - 70-100: You're onto something big here

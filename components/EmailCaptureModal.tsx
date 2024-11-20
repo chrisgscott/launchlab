@@ -3,28 +3,61 @@
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
+import type { Insights } from '@/types/supabase';
 
+/**
+ * EmailCaptureModal component props.
+ *
+ * @typedef {Object} EmailCaptureModalProps
+ * @property {boolean} isOpen - Whether the modal is open.
+ * @property {function} onClose - Callback function to close the modal.
+ * @property {string} analysisId - ID of the analysis.
+ * @property {function} onSuccess - Callback function to call on success.
+ * @property {Insights} insights - Insights data.
+ */
 interface EmailCaptureModalProps {
+  isOpen: boolean;
   onClose: () => void;
+  analysisId: string;
+  onSuccess: () => void;
+  insights: Insights;
 }
 
-export default function EmailCaptureModal({ onClose }: EmailCaptureModalProps) {
+/**
+ * EmailCaptureModal component.
+ *
+ * @param {EmailCaptureModalProps} props - Component props.
+ * @returns {JSX.Element|null} Modal content or null if not open.
+ */
+export default function EmailCaptureModal({
+  isOpen,
+  onClose,
+  analysisId,
+  onSuccess,
+  insights,
+}: EmailCaptureModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * Handle form submission.
+   *
+   * @param {React.FormEvent} e - Form event.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
     try {
-      // Trigger async report generation
       const response = await fetch('/api/idea/async-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email,
+          email,
+          analysisId,
+          insights,
         }),
       });
 
@@ -32,7 +65,7 @@ export default function EmailCaptureModal({ onClose }: EmailCaptureModalProps) {
         throw new Error('Failed to start report generation');
       }
 
-      // Show success message and close
+      onSuccess();
       toast.success(
         "We're generating your validation roadmap! We'll email you a secure link when it's ready (usually within 2-3 minutes).",
         { duration: 7000 }
@@ -46,6 +79,8 @@ export default function EmailCaptureModal({ onClose }: EmailCaptureModalProps) {
       setIsSubmitting(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

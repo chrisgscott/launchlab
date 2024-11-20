@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/libs/supabase/client';
-import type { IdeaAnalysis } from '@/types/supabase';
 import {
   ArrowRight,
   AlertTriangle,
@@ -17,6 +16,7 @@ import {
   CheckCircle,
   Lightbulb,
   ChartBar,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import EmailCaptureModal from '@/components/EmailCaptureModal';
@@ -42,11 +42,10 @@ type CategoryInsights = {
     description: string;
     actionSteps?: string[];
   }>;
+  improvementTips?: string[];
 };
 
-type Insights = {
-  [K in CategoryKey]?: CategoryInsights;
-} & {
+type Insights = Record<CategoryKey, CategoryInsights> & {
   totalScore: number;
   criticalIssues: Array<{
     issue: string;
@@ -54,17 +53,6 @@ type Insights = {
   }>;
   nextSteps: NextStep[];
   validationStatus?: string;
-};
-
-type FactorInsights = {
-  [K in CategoryKey]: CategoryInsights;
-} & {
-  totalScore: number;
-  criticalIssues: Array<{
-    issue: string;
-    recommendation: string;
-  }>;
-  nextSteps: NextStep[];
 };
 
 export default function InsightsPage() {
@@ -174,8 +162,6 @@ export default function InsightsPage() {
     return "Back to the drawing board - we'll help you get there";
   };
 
-  const statusMessage = getStatusMessage(score);
-
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'bg-gradient-to-r from-success/20 to-success/5 border-success';
     if (score >= 60) return 'bg-gradient-to-r from-warning/20 to-warning/5 border-warning';
@@ -196,6 +182,55 @@ export default function InsightsPage() {
     { key: 'scalability' as const, label: 'Scalability', icon: Radio, weight: 10 },
   ] as const;
 
+  const getQuickTips = (category: string, categoryData: CategoryInsights): string[] => {
+    // If we have OpenAI-generated tips, use those
+    if (categoryData.improvementTips && categoryData.improvementTips.length > 0) {
+      return categoryData.improvementTips;
+    }
+
+    // Fallback to default tips if OpenAI tips aren't available
+    switch (category) {
+      case 'Market Opportunity':
+        return [
+          'Research adjacent markets that could benefit from your solution',
+          'Interview potential customers to validate market size',
+          'Identify and quantify specific pain points in the market',
+        ];
+      case 'Competitive Advantage':
+        return [
+          'Map out your unique value proposition',
+          'Analyze competitor weaknesses you can address',
+          'Document your intellectual property or trade secrets',
+        ];
+      case 'Feasibility':
+        return [
+          'Break down technical requirements into smaller chunks',
+          'Identify key resources and partnerships needed',
+          'Create a prototype or MVP timeline',
+        ];
+      case 'Revenue Potential':
+        return [
+          'Model different pricing strategies',
+          'Calculate customer lifetime value',
+          'Identify additional revenue streams',
+        ];
+      case 'Market Timing':
+        return [
+          'Research current market trends and dynamics',
+          'Identify regulatory or technological changes that could impact timing',
+          'Map out market readiness indicators',
+        ];
+      case 'Scalability':
+        return [
+          'Identify automation opportunities',
+          'Plan for infrastructure needs at scale',
+          "Research similar companies' growth patterns",
+        ];
+      default:
+        return ['Tip not available'];
+    }
+  };
+
   const renderFactorCard = (category: (typeof categories)[number], insights: Insights) => {
     const categoryData = insights[category.key];
     if (!categoryData) return null;
@@ -203,7 +238,7 @@ export default function InsightsPage() {
     const score = categoryData.score;
     console.log(`${category.key} score:`, score);
 
-    const needsImprovement = score <= 50; // Show improvement suggestions for scores of 50 or below
+    const quickTips = getQuickTips(category.label, categoryData);
 
     return (
       <div
@@ -212,12 +247,16 @@ export default function InsightsPage() {
       >
         <div className={`card-body p-0`}>
           <div className={`p-4 rounded-t-xl border-b ${getScoreColor(score)}`}>
-            <h2 className="card-title flex items-center">
-              <category.icon
-                className={`w-5 h-5 mr-2 ${score >= 80 ? 'text-success' : score >= 60 ? 'text-warning' : 'text-error'}`}
-              />
-              {category.label}
-              <span className="ml-auto text-sm font-semibold">{score}/100</span>
+            <h2 className="card-title flex items-center justify-between">
+              <div className="flex items-center">
+                <category.icon
+                  className={`w-5 h-5 mr-2 ${
+                    score >= 80 ? 'text-success' : score >= 60 ? 'text-warning' : 'text-error'
+                  }`}
+                />
+                {category.label}
+              </div>
+              <span className="text-sm font-semibold">{score}/100</span>
             </h2>
           </div>
           <div className="p-4 space-y-4">
@@ -225,23 +264,44 @@ export default function InsightsPage() {
               <div key={i} className="text-sm">
                 <div className="font-medium mb-1">{insight.title}</div>
                 <p className="opacity-70 mb-2">{insight.description}</p>
-
-                {/* Show action steps if score needs improvement */}
-                {needsImprovement && insight.actionSteps && (
-                  <div className="mt-2 pl-3 border-l-2 border-primary bg-primary/5 p-3 rounded-r">
-                    <div className="font-medium text-primary mb-1 flex items-center">
-                      <Lightbulb className="w-4 h-4 mr-2" />
-                      How to improve:
-                    </div>
-                    <ul className="list-disc list-inside space-y-1 text-sm opacity-70">
-                      {insight.actionSteps.map((step: string, j: number) => (
-                        <li key={j}>{step}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             ))}
+
+            {/* Improvement Accordion */}
+            <div className="collapse collapse-arrow bg-base-200 rounded-lg">
+              <input type="checkbox" />
+              <div className="collapse-title text-sm font-medium flex items-center gap-2">
+                <Lightbulb className="w-4 h-4" />
+                How to Improve Your Score
+              </div>
+              <div className="collapse-content">
+                <div className="pt-2 space-y-4">
+                  {/* Quick Tips */}
+                  <div className="space-y-2">
+                    {quickTips.map((tip, index) => (
+                      <div key={index} className="flex items-start gap-2 text-sm">
+                        <span className="text-primary mt-1">•</span>
+                        <span className="opacity-70">{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Roadmap CTA */}
+                  <div className="bg-base-100 rounded-lg p-4 mt-4">
+                    <p className="text-sm mb-3">
+                      Want a detailed plan to improve your {category.label.toLowerCase()} score?
+                    </p>
+                    <button
+                      onClick={() => setShowEmailModal(true)}
+                      className="btn btn-primary btn-sm w-full gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                    >
+                      Get Your Free Business Blueprint
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -309,7 +369,7 @@ export default function InsightsPage() {
                     ? 'Getting there, needs some work'
                     : 'Time to pivot and iterate'}
               </h2>
-              <p className="text-xl opacity-70 mb-6">{statusMessage}</p>
+              <p className="text-xl opacity-70 mb-6">{getStatusMessage(score)}</p>
 
               <div className="flex items-center gap-6">
                 <div>
