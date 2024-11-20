@@ -1,0 +1,2 @@
+[global.env_variables]
+# We'll set these through the Supabase CLI

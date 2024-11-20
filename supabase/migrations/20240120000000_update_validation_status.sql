@@ -12,10 +12,11 @@ DO $$ BEGIN
 END $$;
 
 -- Add a CHECK constraint to ensure the status is valid
+ALTER TABLE idea_analyses DROP CONSTRAINT IF EXISTS idea_analyses_validation_status_check;
 ALTER TABLE idea_analyses
 ADD CONSTRAINT idea_analyses_validation_status_check
 CHECK (
-    (insights->>'validationStatus')::text IN (
+    REPLACE(REPLACE(insights->>'validationStatus', '"', ''), '''', '') IN (
         'READY TO VALIDATE',
         'NEEDS REFINEMENT',
         'MAJOR CONCERNS'
@@ -25,7 +26,7 @@ CHECK (
 -- Update existing records to use the new status values
 UPDATE idea_analyses
 SET insights = jsonb_set(
-    insights,
+    insights - 'launchStatus',
     '{validationStatus}',
     CASE 
         WHEN insights->>'launchStatus' = 'READY FOR LIFTOFF' THEN '"READY TO VALIDATE"'
@@ -34,9 +35,4 @@ SET insights = jsonb_set(
         ELSE '"NEEDS REFINEMENT"'
     END::jsonb
 )
-WHERE insights ? 'launchStatus';
-
--- Remove the old launchStatus field from the insights JSONB
-UPDATE idea_analyses
-SET insights = insights - 'launchStatus'
 WHERE insights ? 'launchStatus';

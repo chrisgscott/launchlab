@@ -13,131 +13,175 @@ const ReportRequestSchema = z.object({
   analysisId: z.string(),
 });
 
-// Define the structure we want from OpenAI for the detailed report
+// Define the structure we want from OpenAI
 const REPORT_SCHEMA = {
   name: 'validation_roadmap',
   description: 'Generate a practical validation roadmap for a startup idea',
   parameters: {
     type: 'object',
     properties: {
-      // Idea Refinement & Positioning
-      oneLiner: {
-        type: 'string',
-        description: 'A clear, compelling one-line description of the idea',
+      // Validation Strategy
+      validationStrategy: {
+        type: 'object',
+        description: 'Overall validation strategy and approach',
+        properties: {
+          summary: { type: 'string' },
+          keyObjectives: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          timeline: { type: 'string' },
+        },
+        required: ['summary', 'keyObjectives', 'timeline'],
       },
-      uniqueValueInsights: {
-        type: 'array',
-        description: 'Key aspects of the unique value proposition',
-        items: { type: 'string' },
+      // Customer Validation
+      customerValidation: {
+        type: 'object',
+        description: 'Steps to validate customer needs and willingness to pay',
+        properties: {
+          targetSegments: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                segment: { type: 'string' },
+                characteristics: { type: 'string' },
+                findingChannels: { type: 'string' },
+              },
+              required: ['segment', 'characteristics', 'findingChannels'],
+            },
+          },
+          interviewQuestions: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          successMetrics: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+        },
+        required: ['targetSegments', 'interviewQuestions', 'successMetrics'],
       },
-      differentiators: {
-        type: 'array',
-        description: 'Key differentiators from existing solutions',
-        items: { type: 'string' },
+      // Solution Validation
+      solutionValidation: {
+        type: 'object',
+        description: 'Steps to validate the proposed solution',
+        properties: {
+          mvpFeatures: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                feature: { type: 'string' },
+                purpose: { type: 'string' },
+                testingApproach: { type: 'string' },
+              },
+              required: ['feature', 'purpose', 'testingApproach'],
+            },
+          },
+          testingMethods: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                method: { type: 'string' },
+                description: { type: 'string' },
+                expectedOutcome: { type: 'string' },
+              },
+              required: ['method', 'description', 'expectedOutcome'],
+            },
+          },
+        },
+        required: ['mvpFeatures', 'testingMethods'],
       },
-
-      // Target Customer
-      targetAudienceInsights: {
-        type: 'array',
-        description: 'Detailed insights about the ideal early adopter',
-        items: { type: 'string' },
+      // Market Validation
+      marketValidation: {
+        type: 'object',
+        description: 'Steps to validate market size and competition',
+        properties: {
+          marketResearch: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                area: { type: 'string' },
+                sources: { type: 'string' },
+                metrics: { type: 'string' },
+              },
+              required: ['area', 'sources', 'metrics'],
+            },
+          },
+          competitorAnalysis: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                competitor: { type: 'string' },
+                strengths: { type: 'string' },
+                weaknesses: { type: 'string' },
+              },
+              required: ['competitor', 'strengths', 'weaknesses'],
+            },
+          },
+        },
+        required: ['marketResearch', 'competitorAnalysis'],
       },
-      painPoints: {
-        type: 'array',
-        description: 'Current pain points and solutions used by the target audience',
-        items: { type: 'string' },
-      },
-
-      // Landing Page Blueprint
-      headlines: {
-        type: 'array',
-        description: 'Compelling headline options for the landing page',
-        items: { type: 'string' },
-      },
-      keyBenefits: {
-        type: 'array',
-        description: 'Key benefits to highlight on the landing page',
-        items: { type: 'string' },
-      },
-
-      // Validation Plan
-      nextSteps: {
-        type: 'array',
-        description: 'Concrete next steps for the 30-day validation plan',
-        items: { type: 'string' },
-      },
-      successMetrics: {
-        type: 'array',
-        description: 'Specific metrics to aim for during validation',
-        items: { type: 'string' },
-      },
-
-      // Confidence Boosters
-      successStories: {
-        type: 'array',
-        description: 'Examples of similar products/companies that started small',
-        items: { type: 'string' },
-      },
-
-      // Overall Analysis
-      totalScore: {
-        type: 'number',
-        description: 'Validation readiness score out of 100',
-      },
-      marketOpportunities: {
-        type: 'array',
-        description: 'Key market opportunities identified',
-        items: { type: 'string' },
-      },
+      // Risks and Mitigation
       risks: {
         type: 'array',
-        description: 'Potential risks and challenges to address',
-        items: { type: 'string' },
+        description: 'Key risks and mitigation strategies',
+        items: {
+          type: 'object',
+          properties: {
+            risk: { type: 'string' },
+            impact: { type: 'string' },
+            mitigationStrategy: { type: 'string' },
+          },
+          required: ['risk', 'impact', 'mitigationStrategy'],
+        },
       },
+      // Validation Status
       validationStatus: {
         type: 'string',
         enum: ['READY TO VALIDATE', 'NEEDS REFINEMENT', 'MAJOR CONCERNS'],
-        description: 'Overall validation status based on total score',
       },
+      // Critical Issues
       criticalIssues: {
         type: 'array',
-        description: 'Critical issues that need immediate attention',
+        description: 'Critical issues that must be addressed',
         items: {
           type: 'object',
           properties: {
             issue: { type: 'string' },
+            impact: { type: 'string' },
             recommendation: { type: 'string' },
           },
-          required: ['issue', 'recommendation'],
+          required: ['issue', 'impact', 'recommendation'],
         },
       },
+      // Next Steps Report
       nextStepsReport: {
         type: 'array',
-        description: 'Prioritized next steps with detailed descriptions',
+        description: 'Prioritized next steps for validation',
         items: {
           type: 'object',
           properties: {
-            title: { type: 'string' },
-            description: { type: 'string' },
-            priority: { type: 'string', enum: ['HIGH', 'MEDIUM', 'LOW'] },
+            step: { type: 'string' },
+            details: { type: 'string' },
+            priority: {
+              type: 'string',
+              enum: ['HIGH', 'MEDIUM', 'LOW'],
+            },
           },
-          required: ['title', 'description', 'priority'],
+          required: ['step', 'details', 'priority'],
         },
       },
     },
     required: [
-      'oneLiner',
-      'uniqueValueInsights',
-      'differentiators',
-      'targetAudienceInsights',
-      'painPoints',
-      'headlines',
-      'keyBenefits',
-      'nextSteps',
-      'successMetrics',
-      'successStories',
-      'totalScore',
-      'marketOpportunities',
+      'validationStrategy',
+      'customerValidation',
+      'solutionValidation',
+      'marketValidation',
       'risks',
       'validationStatus',
       'criticalIssues',
@@ -174,7 +218,7 @@ export async function POST(request: Request) {
     console.log('Calling OpenAI with schema:', JSON.stringify(REPORT_SCHEMA, null, 2));
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini-2024-07-18',
+      model: process.env.OPENAI_MODEL || 'gpt-4',
       messages: [
         {
           role: 'system',
@@ -184,64 +228,48 @@ Your task is to create a Validation Roadmap that gives entrepreneurs everything 
 
 Structure your analysis around these key areas:
 
-1. Idea Refinement & Positioning
-- Craft a clear, compelling one-liner that instantly communicates value
-- Identify unique value propositions that will resonate with early adopters
-- Highlight key differentiators from existing solutions
-- Address common objections they'll face
+1. Validation Strategy
+- Create a clear, actionable plan for validating the idea
+- Break down key objectives into measurable goals
+- Set realistic timelines for validation activities
 
-2. Target Customer Deep-Dive
-- Build a detailed profile of their ideal early adopter
-- Identify where these customers hang out online and offline
-- Capture the exact language/terms customers use to describe their problem
-- Map out current solutions and pain points
+2. Customer Validation
+- Define clear target customer segments
+- Create interview questions that get to the heart of the problem
+- Set success metrics for customer validation
 
-3. Landing Page Blueprint
-- Create headline options that will grab attention
-- List key benefits that will resonate with the target audience
-- Identify social proof elements they should gather
-- Suggest effective call-to-action strategies
+3. Solution Validation
+- Define MVP features that test core assumptions
+- Create specific testing methods for each feature
+- Set clear expected outcomes for testing
 
-4. Quick-Start Validation Plan
-- Outline a 30-day validation timeline
-- Identify the first 3 places to share their landing page
-- Provide templates/scripts for reaching out to potential customers
-- Set clear success metrics to aim for
+4. Market Validation
+- Identify key market research areas and sources
+- Analyze direct and indirect competitors
+- Set market size and growth metrics to validate
 
-5. Confidence Boosters
-- Share examples of similar products/companies that started small
-- Highlight common pivots that led to success
-- Show real examples of early landing pages from now-successful companies
+5. Risks and Critical Issues
+- Identify potential showstoppers early
+- Provide practical mitigation strategies
+- Highlight critical issues that need immediate attention
 
-For each section:
-1. Be specific and actionable - no vague advice
-2. Focus on immediate next steps they can take
-3. Provide examples and templates where possible
-4. Address common fears and objections
+6. Next Steps
+- Prioritize actions based on impact and urgency
+- Provide specific, actionable next steps
+- Set clear success criteria for each step
 
-Calculate a validation readiness score out of 100 based on:
-- Clarity of value proposition (25%)
-- Understanding of target customer (25%)
-- Ease of initial validation (25%)
-- Market timing and opportunity (25%)
+Keep your recommendations:
+ Practical and actionable
+ Focused on real-world validation
+ Specific to the idea's context
+ Prioritized by impact
 
-Determine the validation status:
-- 70-100: READY TO VALIDATE - Begin validation immediately
-- 50-69: NEEDS REFINEMENT - Address key issues first
-- <50: MAJOR CONCERNS - Rethink core assumptions
-
-Keep your tone:
- Practical and action-oriented
- Encouraging but realistic
- Focused on immediate next steps
- Empowering without sugar-coating
-
-Remember: Your goal is to give them confidence through clarity and concrete action steps. Help them move from "I think this could work" to "I know exactly how to test this."`,
+Remember: We're here to help entrepreneurs take concrete steps toward validation, not to create theoretical frameworks or business plans.`,
         },
         {
           role: 'user',
-          content: `Generate a detailed validation roadmap for this business idea:
-    
+          content: `Generate a validation roadmap for this idea based on the previous analysis:
+
 Problem Statement: ${analysis.problem_statement}
 Target Audience: ${analysis.target_audience}
 Unique Value Proposition: ${analysis.unique_value_proposition}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { XCircle, Mail, ArrowRight } from 'lucide-react';
 import { EmailTemplateId } from '@/libs/email-templates';
+import toast from 'react-hot-toast';
 
 interface EmailCaptureModalProps {
   isOpen: boolean;
@@ -20,59 +21,39 @@ export default function EmailCaptureModal({
   insights,
 }: EmailCaptureModalProps) {
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!isOpen) return null;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError(null);
+    setIsSubmitting(true);
 
     try {
-      // Create access token for the report
-      const response = await fetch('/api/idea/report-access', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) throw new Error('Failed to create report access');
-      const { token } = await response.json();
-
-      // Generate the report URL
-      const reportUrl = `${window.location.origin}/idea/report/${token}`;
-
-      // Send the validation report email
-      await fetch('/api/email/send', {
+      // Trigger async report generation
+      const response = await fetch('/api/idea/async-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          templateId: EmailTemplateId.VALIDATION_REPORT,
-          params: {
-            reportUrl,
-            score: insights.score,
-          },
+          analysisId: analysisId,
+          email: email,
         }),
       });
 
-      // Subscribe to the mailing list
-      await fetch('/api/email/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          listId: 7,
-        }),
-      });
+      if (!response.ok) {
+        throw new Error('Failed to start report generation');
+      }
 
-      setIsSubmitting(false);
-      onSuccess();
+      // Show success message and close after delay
+      toast.success(
+        "We're generating your validation roadmap and will email it to you in a few minutes!",
+        { duration: 5000 }
+      );
+      onClose();
     } catch (err) {
-      console.error('Error:', err);
-      setError('Failed to send report. Please try again.');
+      console.error('Error submitting email:', err);
+      setError('Failed to submit email. Please try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -83,55 +64,45 @@ export default function EmailCaptureModal({
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-base-content/50 hover:text-base-content transition-colors"
+          disabled={isSubmitting}
         >
           <XCircle className="w-6 h-6" />
         </button>
 
         <div className="p-6">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4">
-              <Mail className="w-6 h-6 text-primary" />
+          <h2 className="text-2xl font-bold mb-4">Get Your Validation Roadmap</h2>
+          <p className="mb-4">
+            We'll analyze your idea and send you a personalized validation roadmap with actionable
+            next steps to test your assumptions.
+          </p>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full p-2 border rounded mb-4"
+              required
+              disabled={isSubmitting}
+            />
+            {error && <div className="text-red-500 mb-4">{error}</div>}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'Get Roadmap'}
+              </button>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Get Your Full Validation Report</h2>
-            <p className="text-base-content/70">
-              We&apos;ll send you a detailed report with everything you need to start validating
-              your idea with real users.
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="input input-bordered w-full"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            {error && (
-              <div className="text-error text-sm flex items-center gap-1">
-                <XCircle className="w-4 h-4" />
-                {error}
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                <>
-                  Send Me the Report
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
           </form>
         </div>
       </div>

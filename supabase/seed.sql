@@ -120,3 +120,30 @@ insert into idea_analyses (
         ]
     }'::jsonb
 );
+
+-- Add report_data and report_generated columns to idea_analyses
+alter table public.idea_analyses
+add column if not exists report_data jsonb,
+add column if not exists report_generated boolean default false;
+
+-- Create report_access table
+create table if not exists public.report_access (
+  id uuid default uuid_generate_v4() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  token text not null unique,
+  email text not null,
+  expires_at timestamp with time zone not null
+);
+
+-- Add analysis_id column to report_access table
+alter table public.report_access
+add column if not exists analysis_id uuid references public.idea_analyses(id);
+
+-- Set up RLS policies for report_access
+alter table public.report_access enable row level security;
+
+create policy "Enable read access for authenticated users" on public.report_access
+  for select using (auth.role() = 'authenticated');
+
+create policy "Enable insert access for all users" on public.report_access
+  for insert with check (true);

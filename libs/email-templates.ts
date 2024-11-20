@@ -17,7 +17,7 @@ export function getTemplateDescription(
 ): string {
   switch (templateId) {
     case EmailTemplateId.VALIDATION_REPORT:
-      return 'Validation Report';
+      return 'Validation Roadmap';
     default:
       return 'Unknown Template';
   }

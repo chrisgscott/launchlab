@@ -28,7 +28,7 @@ const ANALYSIS_SCHEMA = {
         type: 'object',
         description: 'Market size and growth potential (25% of total score)',
         properties: {
-          score: { type: 'number', minimum: 1, maximum: 5 },
+          score: { type: 'number', minimum: 0, maximum: 100 },
           insights: {
             type: 'array',
             items: {
@@ -47,7 +47,7 @@ const ANALYSIS_SCHEMA = {
         type: 'object',
         description: 'Unique value proposition and barriers to entry (20% of total score)',
         properties: {
-          score: { type: 'number', minimum: 1, maximum: 5 },
+          score: { type: 'number', minimum: 0, maximum: 100 },
           insights: {
             type: 'array',
             items: {
@@ -64,9 +64,9 @@ const ANALYSIS_SCHEMA = {
       },
       feasibility: {
         type: 'object',
-        description: 'Technical complexity and resource requirements (15% of total score)',
+        description: 'Technical and operational complexity (15% of total score)',
         properties: {
-          score: { type: 'number', minimum: 1, maximum: 5 },
+          score: { type: 'number', minimum: 0, maximum: 100 },
           insights: {
             type: 'array',
             items: {
@@ -84,9 +84,9 @@ const ANALYSIS_SCHEMA = {
       // Supporting Factors (40% of total)
       revenuePotential: {
         type: 'object',
-        description: 'Monetization strategy and pricing power (15% of total score)',
+        description: 'Revenue model and financial projections (15% of total score)',
         properties: {
-          score: { type: 'number', minimum: 1, maximum: 5 },
+          score: { type: 'number', minimum: 0, maximum: 100 },
           insights: {
             type: 'array',
             items: {
@@ -105,7 +105,7 @@ const ANALYSIS_SCHEMA = {
         type: 'object',
         description: 'Current market conditions and technological readiness (15% of total score)',
         properties: {
-          score: { type: 'number', minimum: 1, maximum: 5 },
+          score: { type: 'number', minimum: 0, maximum: 100 },
           insights: {
             type: 'array',
             items: {
@@ -124,7 +124,7 @@ const ANALYSIS_SCHEMA = {
         type: 'object',
         description: 'Growth potential and operational complexity (10% of total score)',
         properties: {
-          score: { type: 'number', minimum: 1, maximum: 5 },
+          score: { type: 'number', minimum: 0, maximum: 100 },
           insights: {
             type: 'array',
             items: {
@@ -205,7 +205,7 @@ export async function POST(request: Request) {
     console.log('Calling OpenAI with schema:', JSON.stringify(ANALYSIS_SCHEMA, null, 2));
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini-2024-07-18',
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini-2024-07-18',
       messages: [
         {
           role: 'system',
@@ -246,12 +246,12 @@ Supporting Factors (40% of total):
 - Is the growth path realistic?
 
 For each factor:
-1. Score it 1-5 (1=Needs serious work, 5=Absolutely crushing it)
-2. For scores of 3 or below, provide:
+1. Score it 0-100 (0=Needs serious work, 100=Absolutely crushing it)
+2. For scores of 50 or below, provide:
    - What's holding this factor back
    - Specific actions to improve the score
    - Examples or suggestions when relevant
-3. For scores of 4 or 5, provide:
+3. For scores of 51 or above, provide:
    - What's working well
    - How to maintain or enhance this strength
    - Potential risks to watch out for
@@ -324,6 +324,12 @@ Product Description: ${validatedData.productDescription}`,
 
     console.log('Function call arguments:', message.function_call.arguments);
     const analysis = JSON.parse(message.function_call.arguments);
+
+    // Map the validation status to our allowed values
+    const score = analysis.totalScore;
+    analysis.validationStatus =
+      score >= 70 ? 'READY TO VALIDATE' : score >= 50 ? 'NEEDS REFINEMENT' : 'MAJOR CONCERNS';
+
     console.log('Parsed analysis:', JSON.stringify(analysis, null, 2));
 
     // Save to Supabase
