@@ -114,7 +114,6 @@ type IdeaFormData = z.infer<typeof IdeaSchema>;
 const IdeaInput: React.FC = () => {
   const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [aiInsights] = useState<any>(null);
   const [activeGuide, setActiveGuide] = useState<string | null>(null);
 
@@ -209,7 +208,7 @@ const IdeaInput: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Problem Statement */}
-      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
         <div className="card-body">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">
@@ -258,7 +257,7 @@ const IdeaInput: React.FC = () => {
       </div>
 
       {/* Target Audience */}
-      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
         <div className="card-body">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">
@@ -307,7 +306,7 @@ const IdeaInput: React.FC = () => {
       </div>
 
       {/* Unique Value Proposition */}
-      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
         <div className="card-body">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">
@@ -359,7 +358,7 @@ const IdeaInput: React.FC = () => {
       </div>
 
       {/* Product Description */}
-      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
         <div className="card-body">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">

@@ -1,0 +1,74 @@
+# LaunchLab Development Guide
+
+> For detailed technical documentation, please refer to our [main documentation index](./index.md).
+
+## Quick Start
+
+1. Set up your environment by following the [Environment Setup Guide](./environment-setup.md)
+2. Follow the [Local Development Guide](./local-development.md) to get the project running
+3. Review the [Testing Guide](./testing.md) before making changes
+
+## Current State
+
+Last Updated: [Current Date]
+
+### Active Features
+
+- **Idea Analysis Flow**
+  - Multi-step form for idea input (`/idea`)
+  - AI-powered analysis
+  - Insights page with detailed breakdown (`/idea/insights`)
+  - Email report generation
+
+### Recent Changes
+
+- Fixed TypeScript issues in EmailCaptureModal component
+- Added subtle borders to idea page cards
+- Created stable-insights branch from working commit
+
+### Architecture Overview
+
+- **Frontend**: Next.js 14 with App Router
+- **Styling**: TailwindCSS + DaisyUI
+- **Backend**: Supabase
+- **AI**: OpenAI integration using gpt-4o-mini-2024-07-18 model (optimized for performance and cost)
+- **Email**: Mailgun
+
+For detailed technical information about each component, please refer to:
+
+- [Database Guide](./database.md) for Supabase setup and usage
+- [Edge Functions Guide](./edge-functions.md) for serverless functions
+- [Security Guide](./security.md) for authentication and data protection
+- [Monitoring Guide](./monitoring.md) for observability and logging
+- [Background Tasks Guide](./background-tasks.md) for async operations
+- [Deployment Guide](./deployment.md) for CI/CD and production setup
+
+### Key Components
+
+- `IdeaInput.tsx`: Main form component with educational content
+- `EmailCaptureModal.tsx`: Handles report email capture
+- `insights/page.tsx`: Displays analysis results
+
+### Active Branches
+
+- `stable-insights`: Current working branch (created from f382c8a)
+
+### Environment Variables
+
+See the [Environment Setup Guide](./environment-setup.md) for a complete list of required variables.
+
+### AI Configuration
+
+- **Model**: gpt-4o-mini-2024-07-18
+- **Key Features**:
+  - High performance
+  - Cost-effective
+  - DO NOT change or upgrade this model
+
+### Known Issues
+
+- None currently tracked
+
+### Next Steps
+
+- TBD based on upcoming features
