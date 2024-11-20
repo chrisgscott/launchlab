@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/libs/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     console.log('Successfully triggered report generation');
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, token: data.token });
   } catch (error) {
     console.error('Error in async report generation:', error);
     return NextResponse.json({ error: 'Failed to process report request' }, { status: 500 });

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/libs/supabase/client';
 import type { IdeaAnalysis } from '@/types/supabase';
 import {
@@ -18,58 +17,42 @@ import {
   BadgeCheck,
 } from 'lucide-react';
 
-export default function ReportPage() {
-  const searchParams = useSearchParams();
-  const token = searchParams?.get('token');
-
+export default function ReportPage({ params }: { params: { id: string } }) {
   const [analysis, setAnalysis] = useState<IdeaAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function validateAccess() {
-      if (!token) {
-        setError('Invalid access parameters');
-        setLoading(false);
-        return;
-      }
-
+    async function fetchReport() {
       try {
         const supabase = createClient();
-
-        // Verify access token
-        const { data: accessData, error: accessError } = await supabase
-          .from('report_access')
-          .select('*')
-          .eq('access_token', token)
-          .single();
-
-        if (accessError || !accessData) {
-          throw new Error('Invalid or expired access token');
-        }
-
-        // Fetch analysis data
-        const { data: analysisData, error: analysisError } = await supabase
+        const { data, error } = await supabase
           .from('idea_analyses')
           .select('*')
-          .eq('id', accessData.analysis_id)
+          .eq('report_url', params.id)
           .single();
 
-        if (analysisError || !analysisData) {
-          throw new Error('Analysis not found');
+        if (error) throw error;
+        if (!data) throw new Error('Report not found');
+
+        if (!data.report_generated) {
+          setError(
+            'Report is still being generated. Please check back in a few minutes or check your email for the link.'
+          );
+          return;
         }
 
-        setAnalysis(analysisData);
+        setAnalysis(data);
       } catch (err) {
         console.error('Error fetching report:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load report');
+        setError('Failed to load report. Please check the URL and try again.');
       } finally {
         setLoading(false);
       }
     }
 
-    validateAccess();
-  }, [token]);
+    fetchReport();
+  }, [params.id]);
 
   if (loading) {
     return (

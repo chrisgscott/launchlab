@@ -1,24 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { XCircle, Mail, ArrowRight } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { EmailTemplateId } from '@/libs/email-templates';
 import toast from 'react-hot-toast';
 
 interface EmailCaptureModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  setIsOpen: (isOpen: boolean) => void;
   analysisId: string;
-  onSuccess: () => void;
   insights: any; // TODO: Type this properly
+  onSubmit: (email: string) => Promise<void>;
 }
 
 export default function EmailCaptureModal({
   isOpen,
-  onClose,
+  setIsOpen,
   analysisId,
-  onSuccess,
-  insights,
+  onSubmit,
 }: EmailCaptureModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -44,12 +43,14 @@ export default function EmailCaptureModal({
         throw new Error('Failed to start report generation');
       }
 
-      // Show success message and close after delay
+      // Show success message and close
       toast.success(
-        "We're generating your validation roadmap and will email it to you in a few minutes!",
-        { duration: 5000 }
+        "We're generating your validation roadmap! We'll email you a secure link when it's ready (usually within 2-3 minutes).",
+        { duration: 7000 }
       );
-      onClose();
+
+      setIsOpen(false);
+      await onSubmit(email);
     } catch (err) {
       console.error('Error submitting email:', err);
       setError('Failed to submit email. Please try again.');
@@ -62,11 +63,11 @@ export default function EmailCaptureModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-base-100 rounded-lg shadow-xl max-w-md w-full relative animate-slideIn">
         <button
-          onClick={onClose}
+          onClick={() => setIsOpen(false)}
           className="absolute right-4 top-4 text-base-content/50 hover:text-base-content transition-colors"
           disabled={isSubmitting}
         >
-          <XCircle className="w-6 h-6" />
+          <Mail className="w-6 h-6" />
         </button>
 
         <div className="p-6">
@@ -89,7 +90,7 @@ export default function EmailCaptureModal({
             <div className="flex justify-end gap-2">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => setIsOpen(false)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800"
                 disabled={isSubmitting}
               >
