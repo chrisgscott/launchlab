@@ -56,7 +56,11 @@ Last Updated: 2024-11-20
 
 ### Recent Changes
 
-- Optimized insights generation workflow
+- Implemented asynchronous report generation using Supabase Edge Functions
+- Added type-safe insights rendering with category-specific type guards
+- Added database migrations for report tracking and idea analyses cleanup
+- Improved insights page with better error handling and loading states
+- Fixed husky and lint-staged configuration
 - Updated EmailCaptureModal component with proper TypeScript types
 - Refactored report generation to use initial analysis data
 - Reorganized documentation structure
