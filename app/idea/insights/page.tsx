@@ -35,24 +35,54 @@ type CategoryKey =
   | 'marketTiming'
   | 'scalability';
 
-type CategoryInsights = {
-  score: number;
-  insights: Array<{
-    title: string;
-    description: string;
-    actionSteps?: string[];
-  }>;
-  improvementTips?: string[];
+type MarketOpportunity = {
+  size: string;
+  growth: string;
+  barriers: string[];
 };
 
-type Insights = Record<CategoryKey, CategoryInsights> & {
+type CompetitiveAdvantage = {
+  uniqueFeatures: string[];
+  barriers: string[];
+};
+
+type Feasibility = {
+  technical: string;
+  operational: string;
+  challenges: string[];
+};
+
+type RevenuePotential = {
+  model: string;
+  streams: string[];
+  projections: string;
+};
+
+type MarketTiming = {
+  readiness: string;
+  trends: string[];
+};
+
+type Scalability = {
+  potential: string;
+  requirements: string[];
+  challenges: string[];
+};
+
+type Insights = {
+  marketOpportunity: MarketOpportunity;
+  competitiveAdvantage: CompetitiveAdvantage;
+  feasibility: Feasibility;
+  revenuePotential: RevenuePotential;
+  marketTiming: MarketTiming;
+  scalability: Scalability;
   totalScore: number;
   criticalIssues: Array<{
     issue: string;
     recommendation: string;
   }>;
   nextSteps: NextStep[];
-  validationStatus?: string;
+  validationStatus: string;
 };
 
 export default function InsightsPage() {
@@ -144,16 +174,39 @@ export default function InsightsPage() {
   const statusColor = score >= 70 ? 'success' : score >= 50 ? 'warning' : 'error';
 
   // Create a compatible insights object for our factor cards
-  const factorInsights = {
-    marketOpportunity: insights.marketOpportunity || { score: 0, insights: [] },
-    competitiveAdvantage: insights.competitiveAdvantage || { score: 0, insights: [] },
-    feasibility: insights.feasibility || { score: 0, insights: [] },
-    revenuePotential: insights.revenuePotential || { score: 0, insights: [] },
-    marketTiming: insights.marketTiming || { score: 0, insights: [] },
-    scalability: insights.scalability || { score: 0, insights: [] },
-    totalScore: insights.totalScore,
-    criticalIssues: insights.criticalIssues,
-    nextSteps: insights.nextSteps,
+  const factorInsights: Insights = {
+    marketOpportunity: insights.marketOpportunity || { 
+      size: 'Unknown',
+      growth: 'Unknown',
+      barriers: []
+    },
+    competitiveAdvantage: insights.competitiveAdvantage || {
+      uniqueFeatures: [],
+      barriers: []
+    },
+    feasibility: insights.feasibility || {
+      technical: 'Unknown',
+      operational: 'Unknown',
+      challenges: []
+    },
+    revenuePotential: insights.revenuePotential || {
+      model: 'Unknown',
+      streams: [],
+      projections: 'Unknown'
+    },
+    marketTiming: insights.marketTiming || {
+      readiness: 'Unknown',
+      trends: []
+    },
+    scalability: insights.scalability || {
+      potential: 'Unknown',
+      requirements: [],
+      challenges: []
+    },
+    totalScore: insights.totalScore || 0,
+    criticalIssues: insights.criticalIssues || [],
+    nextSteps: insights.nextSteps || [],
+    validationStatus: insights.validationStatus || 'NEEDS REFINEMENT'
   };
 
   const getStatusMessage = (score: number) => {
@@ -182,13 +235,232 @@ export default function InsightsPage() {
     { key: 'scalability' as const, label: 'Scalability', icon: Radio, weight: 10 },
   ] as const;
 
-  const getQuickTips = (category: string, categoryData: CategoryInsights): string[] => {
-    // If we have OpenAI-generated tips, use those
-    if (categoryData.improvementTips && categoryData.improvementTips.length > 0) {
-      return categoryData.improvementTips;
-    }
+  const isMarketOpportunity = (data: any): data is MarketOpportunity => {
+    return 'size' in data && 'growth' in data;
+  };
 
-    // Fallback to default tips if OpenAI tips aren't available
+  const isCompetitiveAdvantage = (data: any): data is CompetitiveAdvantage => {
+    return 'uniqueFeatures' in data;
+  };
+
+  const isFeasibility = (data: any): data is Feasibility => {
+    return 'technical' in data && 'operational' in data;
+  };
+
+  const isRevenuePotential = (data: any): data is RevenuePotential => {
+    return 'model' in data && 'streams' in data;
+  };
+
+  const isMarketTiming = (data: any): data is MarketTiming => {
+    return 'readiness' in data && 'trends' in data;
+  };
+
+  const isScalability = (data: any): data is Scalability => {
+    return 'potential' in data && 'requirements' in data;
+  };
+
+  const renderFactorContent = (category: string, data: MarketOpportunity | CompetitiveAdvantage | Feasibility | RevenuePotential | MarketTiming | Scalability) => {
+    switch (category) {
+      case 'Market Opportunity':
+        if (isMarketOpportunity(data)) {
+          return (
+            <>
+              <div className="mb-2">
+                <span className="font-semibold">Market Size:</span> {data.size}
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold">Growth Potential:</span> {data.growth}
+              </div>
+              {data.barriers.length > 0 && (
+                <div>
+                  <span className="font-semibold">Key Barriers:</span>
+                  <ul className="list-disc pl-4">
+                    {data.barriers.map((barrier, idx) => (
+                      <li key={idx}>{barrier}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        }
+        break;
+
+      case 'Competitive Advantage':
+        if (isCompetitiveAdvantage(data)) {
+          return (
+            <>
+              {data.uniqueFeatures.length > 0 && (
+                <div className="mb-2">
+                  <span className="font-semibold">Unique Features:</span>
+                  <ul className="list-disc pl-4">
+                    {data.uniqueFeatures.map((feature, idx) => (
+                      <li key={idx}>{feature}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {data.barriers.length > 0 && (
+                <div>
+                  <span className="font-semibold">Entry Barriers:</span>
+                  <ul className="list-disc pl-4">
+                    {data.barriers.map((barrier, idx) => (
+                      <li key={idx}>{barrier}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        }
+        break;
+
+      case 'Feasibility':
+        if (isFeasibility(data)) {
+          return (
+            <>
+              <div className="mb-2">
+                <span className="font-semibold">Technical Feasibility:</span> {data.technical}
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold">Operational Feasibility:</span> {data.operational}
+              </div>
+              {data.challenges.length > 0 && (
+                <div>
+                  <span className="font-semibold">Key Challenges:</span>
+                  <ul className="list-disc pl-4">
+                    {data.challenges.map((challenge, idx) => (
+                      <li key={idx}>{challenge}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        }
+        break;
+
+      case 'Revenue Potential':
+        if (isRevenuePotential(data)) {
+          return (
+            <>
+              <div className="mb-2">
+                <span className="font-semibold">Revenue Model:</span> {data.model}
+              </div>
+              {data.streams.length > 0 && (
+                <div className="mb-2">
+                  <span className="font-semibold">Revenue Streams:</span>
+                  <ul className="list-disc pl-4">
+                    {data.streams.map((stream, idx) => (
+                      <li key={idx}>{stream}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div>
+                <span className="font-semibold">Projections:</span> {data.projections}
+              </div>
+            </>
+          );
+        }
+        break;
+
+      case 'Market Timing':
+        if (isMarketTiming(data)) {
+          return (
+            <>
+              <div className="mb-2">
+                <span className="font-semibold">Market Readiness:</span> {data.readiness}
+              </div>
+              {data.trends.length > 0 && (
+                <div>
+                  <span className="font-semibold">Market Trends:</span>
+                  <ul className="list-disc pl-4">
+                    {data.trends.map((trend, idx) => (
+                      <li key={idx}>{trend}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        }
+        break;
+
+      case 'Scalability':
+        if (isScalability(data)) {
+          return (
+            <>
+              <div className="mb-2">
+                <span className="font-semibold">Scalability Potential:</span> {data.potential}
+              </div>
+              {data.requirements.length > 0 && (
+                <div className="mb-2">
+                  <span className="font-semibold">Scaling Requirements:</span>
+                  <ul className="list-disc pl-4">
+                    {data.requirements.map((req, idx) => (
+                      <li key={idx}>{req}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {data.challenges.length > 0 && (
+                <div>
+                  <span className="font-semibold">Scaling Challenges:</span>
+                  <ul className="list-disc pl-4">
+                    {data.challenges.map((challenge, idx) => (
+                      <li key={idx}>{challenge}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        }
+        break;
+    }
+    return <div>No data available</div>;
+  };
+
+  const calculateScore = (category: string, data: MarketOpportunity | CompetitiveAdvantage | Feasibility | RevenuePotential | MarketTiming | Scalability) => {
+    let score = 0;
+    switch (category) {
+      case 'Market Opportunity':
+        if (isMarketOpportunity(data)) {
+          score = data.size === 'Large' ? 100 : data.size === 'Medium' ? 70 : 40;
+        }
+        break;
+      case 'Competitive Advantage':
+        if (isCompetitiveAdvantage(data)) {
+          score = data.uniqueFeatures.length > 2 ? 100 : data.uniqueFeatures.length > 0 ? 70 : 40;
+        }
+        break;
+      case 'Feasibility':
+        if (isFeasibility(data)) {
+          score = data.technical === 'High' ? 100 : data.technical === 'Medium' ? 70 : 40;
+        }
+        break;
+      case 'Revenue Potential':
+        if (isRevenuePotential(data)) {
+          score = data.model === 'Strong' ? 100 : data.model === 'Moderate' ? 70 : 40;
+        }
+        break;
+      case 'Market Timing':
+        if (isMarketTiming(data)) {
+          score = data.readiness === 'Optimal' ? 100 : data.readiness === 'Good' ? 70 : 40;
+        }
+        break;
+      case 'Scalability':
+        if (isScalability(data)) {
+          score = data.potential === 'High' ? 100 : data.potential === 'Medium' ? 70 : 40;
+        }
+        break;
+    }
+    return score;
+  };
+
+  const getQuickTips = (category: string, categoryData: MarketOpportunity | CompetitiveAdvantage | Feasibility | RevenuePotential | MarketTiming | Scalability): string[] => {
+    // Default tips based on category
     switch (category) {
       case 'Market Opportunity':
         return [
@@ -235,10 +507,13 @@ export default function InsightsPage() {
     const categoryData = insights[category.key];
     if (!categoryData) return null;
 
-    const score = categoryData.score;
-    console.log(`${category.key} score:`, score);
+    // Extract insights based on the category
+    const categoryInsights = renderFactorContent(category.label, categoryData);
 
     const quickTips = getQuickTips(category.label, categoryData);
+
+    // Calculate score based on the category data
+    const score = calculateScore(category.label, categoryData);
 
     return (
       <div
@@ -260,13 +535,7 @@ export default function InsightsPage() {
             </h2>
           </div>
           <div className="p-4 space-y-4">
-            {categoryData.insights.map((insight: any, i: number) => (
-              <div key={i} className="text-sm">
-                <div className="font-medium mb-1">{insight.title}</div>
-                <p className="opacity-70 mb-2">{insight.description}</p>
-              </div>
-            ))}
-
+            {categoryInsights}
             {/* Improvement Accordion */}
             <div className="collapse collapse-arrow bg-base-200 rounded-lg">
               <input type="checkbox" />
@@ -332,18 +601,13 @@ export default function InsightsPage() {
     }
   };
 
-  const getPriorityLabel = (priority: string) => {
+  const getPriorityLabel = (priority: string | undefined) => {
+    if (!priority) return 'Unknown Priority';
     return `${priority.charAt(0) + priority.slice(1).toLowerCase()} Priority`;
   };
 
   const handleGetReport = () => {
     setShowEmailModal(true);
-  };
-
-  const handleEmailSuccess = () => {
-    setShowEmailModal(false);
-    // Redirect to the full report page
-    router.push(`/idea/report/${analysis?.id}`);
   };
 
   return (
@@ -498,9 +762,6 @@ export default function InsightsPage() {
           isOpen={showEmailModal}
           onClose={() => setShowEmailModal(false)}
           analysisId={analysis.id}
-          onSuccess={() => {
-            handleEmailSuccess();
-          }}
           insights={insights}
         />
       )}

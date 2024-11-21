@@ -31,34 +31,59 @@ export type CategoryInsights = {
   }>;
 };
 
+export type ReportSummary = {
+  marketNeed: string;
+  targetAudience: string;
+  uniqueValueProposition: string;
+  scalabilityPotential: string;
+  revenueModel: string;
+};
+
+export type TimelinePhase = {
+  phase: string;
+  duration: string;
+  activities: string[];
+};
+
+export type SuccessMetric = {
+  metric: string;
+  description: string;
+  target: string;
+};
+
+export type Challenge = {
+  title: string;
+  description: string;
+  mitigation: string;
+};
+
 export type AnalysisInsights = {
-  // Idea Refinement & Positioning
+  // Legacy fields for analyze endpoint
   oneLiner: string;
   uniqueValueInsights: string[];
   differentiators: string[];
-
-  // Target Customer
   targetAudienceInsights: string[];
   painPoints: string[];
-
-  // Landing Page Blueprint
   headlines: string[];
   keyBenefits: string[];
-
-  // Validation Plan
-  nextSteps: string[];
-  successMetrics: string[];
-
-  // Confidence Boosters
   successStories: string[];
-
-  // Overall Analysis
   totalScore: number;
   marketOpportunities: string[];
   risks: string[];
   validationStatus: ValidationStatus;
   criticalIssues: CriticalIssue[];
   nextStepsReport: NextStep[];
+
+  // New fields for structured report
+  summary: ReportSummary;
+  recommendations: NextStep[];
+  timeline: TimelinePhase[];
+  successMetrics: SuccessMetric[];
+  nextSteps: NextStep[];
+  strengthsAndChallenges: {
+    strengths: InsightItem[];
+    challenges: Challenge[];
+  };
 };
 
 export type IdeaAnalysis = {
@@ -71,17 +96,10 @@ export type IdeaAnalysis = {
   product_description: string;
   insights: AnalysisInsights;
   report_generated: boolean;
-  report_data: any; // Will be typed more specifically once we define report structure
+  report_data: string; // JSON string containing the report data
+  report_url?: string;
+  report_email?: string;
   user_id?: string;
-};
-
-export type ReportAccess = {
-  id: string;
-  created_at: string;
-  email: string;
-  analysis_id: string;
-  access_token: string;
-  expires_at: string;
 };
 
 export type Database = {
@@ -91,11 +109,6 @@ export type Database = {
         Row: IdeaAnalysis;
         Insert: Omit<IdeaAnalysis, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<IdeaAnalysis, 'id' | 'created_at' | 'updated_at'>>;
-      };
-      report_access: {
-        Row: ReportAccess;
-        Insert: Omit<ReportAccess, 'id' | 'created_at'>;
-        Update: Partial<Omit<ReportAccess, 'id' | 'created_at'>>;
       };
     };
   };

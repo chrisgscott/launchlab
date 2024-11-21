@@ -12,14 +12,12 @@ import type { Insights } from '@/types/supabase';
  * @property {boolean} isOpen - Whether the modal is open.
  * @property {function} onClose - Callback function to close the modal.
  * @property {string} analysisId - ID of the analysis.
- * @property {function} onSuccess - Callback function to call on success.
  * @property {Insights} insights - Insights data.
  */
 interface EmailCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
   analysisId: string;
-  onSuccess: () => void;
   insights: Insights;
 }
 
@@ -33,7 +31,6 @@ export default function EmailCaptureModal({
   isOpen,
   onClose,
   analysisId,
-  onSuccess,
   insights,
 }: EmailCaptureModalProps) {
   const [email, setEmail] = useState('');
@@ -65,17 +62,15 @@ export default function EmailCaptureModal({
         throw new Error('Failed to start report generation');
       }
 
-      onSuccess();
+      // Show success message and close modal immediately
       toast.success(
         "We're generating your validation roadmap! We'll email you a secure link when it's ready (usually within 2-3 minutes).",
         { duration: 7000 }
       );
-
       onClose();
     } catch (err) {
       console.error('Error submitting email:', err);
       setError('Failed to submit email. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };

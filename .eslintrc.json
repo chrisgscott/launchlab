@@ -5,6 +5,12 @@
     "node": true,
     "es6": true
   },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "build/",
+    "supabase/functions/**/*.ts"
+  ],
   "rules": {
     "no-unused-vars": "warn",
     "react/no-unescaped-entities": "off"

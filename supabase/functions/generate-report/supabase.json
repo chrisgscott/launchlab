@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "generate-report": {
+      "verify": true,
+      "import_map": "import_map.json",
+      "runtime": "deno",
+      "entrypoint": "index.ts",
+      "env": {
+        "OPENAI_API_KEY": "required",
+        "SUPABASE_URL": "required",
+        "SUPABASE_SERVICE_ROLE_KEY": "required",
+        "PUBLIC_APP_URL": "required"
+      }
+    }
+  }
+}

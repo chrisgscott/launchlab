@@ -6,20 +6,17 @@ export async function POST(request: Request) {
     const { analysisId, email } = await request.json();
     console.log('Triggering async report generation for:', { analysisId, email });
 
+    // Start the Edge Function invocation without waiting for it to complete
     const supabase = createClient();
-
-    // Call the Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke('generate-report', {
+    supabase.functions.invoke('generate-report', {
       body: { analysisId, email },
+    }).catch(error => {
+      // Log any errors but don't block the response
+      console.error('Error in edge function (async):', error);
     });
 
-    if (error) {
-      console.error('Error invoking edge function:', error);
-      throw error;
-    }
-
     console.log('Successfully triggered report generation');
-    return NextResponse.json({ success: true, token: data.token });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in async report generation:', error);
     return NextResponse.json({ error: 'Failed to process report request' }, { status: 500 });
