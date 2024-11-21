@@ -20,17 +20,18 @@ Last Updated: 2024-11-20
   - Priority: High
   - Dependencies: OpenAI API, Brevo API, Supabase
   - Components:
-    - Generating detailed business blueprint/report
-    - Saving reports to database
-    - Creating unique, secure access links
-    - Frontend report display
-    - Email list signup via Brevo
-    - Email delivery system
+    - Asynchronous report generation via Edge Functions
+    - Structured insights data with category-specific analysis
+    - Secure report storage and access control
+    - Email delivery system with Brevo integration
   - Recent Updates:
-    - Moved improvement tips generation to initial analysis phase
-    - Enhanced insights display with AI-generated improvement tips
-    - Streamlined report generation process
-    - Updated EmailCaptureModal with proper TypeScript types
+    - Complete overhaul of report generation system:
+      - Moved to asynchronous processing using Edge Functions
+      - Improved prompts for more detailed analysis
+      - Added structured data validation
+    - New database schema for reports and analyses
+    - Enhanced insights UI with category-specific rendering
+    - Added email-based report delivery system
 
 - **Landing Page Builder**
 
@@ -56,16 +57,32 @@ Last Updated: 2024-11-20
 
 ### Recent Changes
 
-- Implemented asynchronous report generation using Supabase Edge Functions
-- Added type-safe insights rendering with category-specific type guards
-- Added database migrations for report tracking and idea analyses cleanup
-- Improved insights page with better error handling and loading states
-- Fixed husky and lint-staged configuration
-- Updated EmailCaptureModal component with proper TypeScript types
-- Refactored report generation to use initial analysis data
-- Reorganized documentation structure
-- Updated product roadmap
-- Created documentation update workflow and scripts
+- Major system overhaul:
+  - Refactored entire report generation system to use Edge Functions
+  - Redesigned database schema with new tables:
+    - `idea_reports` for storing generated reports
+    - Added `report_generated_at` tracking
+    - Improved idea analyses structure
+  - Updated OpenAI prompts for more comprehensive analysis
+  - Implemented structured data validation for AI responses
+
+- Backend improvements:
+  - Created new Supabase Edge Function for report generation
+  - Added TypeScript types for all API responses
+  - Implemented proper error handling and retry logic
+  - Added report access control and security measures
+
+- Frontend enhancements:
+  - Added type-safe insights rendering with category-specific components
+  - Improved loading states and error handling
+  - Enhanced UI for report generation progress
+  - Updated email capture flow with proper validation
+
+- Infrastructure updates:
+  - Added new database migrations for report system
+  - Updated seed data for testing
+  - Fixed husky and lint-staged configuration
+  - Improved development workflow
 
 ### Architecture Overview
 
@@ -88,7 +105,9 @@ For detailed technical information about each component, please refer to:
 
 - `IdeaInput.tsx`: Main form component with educational content
 - `EmailCaptureModal.tsx`: Handles report email capture
-- `insights/page.tsx`: Displays analysis results
+- `insights/page.tsx`: Displays analysis results with category-specific rendering
+- `generate-report/index.ts`: Edge Function for async report generation
+- `idea_reports`: New database table for storing generated reports
 
 ### Active Branches
 
