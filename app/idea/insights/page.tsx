@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/libs/supabase/client';
 import EmailCaptureModal from '@/components/EmailCaptureModal';
+import { type Insights } from '@/types/insights';
 
 type Insight = {
   title: string;
@@ -11,26 +12,17 @@ type Insight = {
   action_steps?: string[];
 };
 
-type CategoryData = {
+type CategoryInsight = {
   score: number;
   insights: Insight[];
   improvement_tips: string[];
 };
 
-type Analysis = {
-  id: string;
-  total_score: number;
-  validation_status: 'VALID' | 'INVALID';
+type Analysis = Insights & {
   critical_issues: Array<{
     issue: string;
     recommendation: string;
   }>;
-  market_opportunity: CategoryData;
-  competitive_advantage: CategoryData;
-  feasibility: CategoryData;
-  revenue_potential: CategoryData;
-  market_timing: CategoryData;
-  scalability: CategoryData;
 };
 
 export default function InsightsPage() {
@@ -62,7 +54,28 @@ export default function InsightsPage() {
         if (!data) throw new Error('Analysis not found');
 
         console.log('Analysis data:', data);
-        setAnalysis(data);
+
+        // Transform the data to match our Analysis type
+        const transformedData: Analysis = {
+          id: data.id,
+          idea_name: data.idea_name,
+          problem_statement: data.problem_statement,
+          target_audience: data.target_audience,
+          unique_value_proposition: data.unique_value_proposition,
+          product_description: data.product_description,
+          total_score: data.total_score,
+          validation_status: data.validation_status,
+          critical_issues:
+            (data.critical_issues as Array<{ issue: string; recommendation: string }>) || [],
+          market_opportunity: data.market_opportunity as CategoryInsight,
+          competitive_advantage: data.competitive_advantage as CategoryInsight,
+          feasibility: data.feasibility as CategoryInsight,
+          revenue_potential: data.revenue_potential as CategoryInsight,
+          market_timing: data.market_timing as CategoryInsight,
+          scalability: data.scalability as CategoryInsight,
+        };
+
+        setAnalysis(transformedData);
       } catch (err) {
         console.error('Error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load analysis');
@@ -124,7 +137,7 @@ export default function InsightsPage() {
             return null;
           }
 
-          const category = value as CategoryData;
+          const category = value as CategoryInsight;
           return (
             <div key={key} className="mb-6">
               <h3>
