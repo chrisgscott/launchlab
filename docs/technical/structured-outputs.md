@@ -608,3 +608,40 @@ response_format: { type: "json_object" },
 // Your code should handle errors here, for example a network error calling the API
 console.error(e)
 }
+
+# Type Safety with Structured Outputs
+
+## Database Integration
+
+When storing structured outputs in our database:
+
+1. Use Supabase's `jsonb` type for storing structured data
+2. Always validate the data shape before storing
+3. Transform data when retrieving from the database (see [Database Guide - Type Safety with JSON Fields](./database.md#type-safety-with-json-fields))
+
+## Type Definitions
+
+We maintain our type definitions in the `types/` directory:
+
+- `types/insights.ts`: Core type definitions for analysis insights
+- `types/supabase.ts`: Database-specific type definitions
+
+Example of proper type usage:
+
+```typescript
+import { type Insights, type CategoryInsight } from '@/types/insights';
+
+// Transform raw data to typed interface
+const transformedData: Insights = {
+  market_opportunity: rawData.market_opportunity as CategoryInsight,
+  // ... other fields
+};
+```
+
+## Best Practices
+
+1. Use TypeScript interfaces to define expected data structures
+2. Validate data against these interfaces when processing API responses
+3. Transform data immediately after database retrieval
+4. Add proper type assertions and null checks
+5. Keep type definitions DRY and centralized

@@ -112,6 +112,52 @@ When updating the database schema:
 4. Update related components
 5. Verify RLS policies
 
+## Type Safety with JSON Fields
+
+### Handling Supabase JSON Data
+
+When working with JSON fields from Supabase, you need to properly transform the data to match our TypeScript interfaces. Here's how to handle it:
+
+1. **Type Assertions**: Always use explicit type assertions when working with JSON fields:
+
+```typescript
+const data = await supabase.from('idea_insights').select('*').single();
+const category = data.market_opportunity as CategoryInsight;
+```
+
+2. **Null Handling**: Add fallbacks for potentially null JSON arrays:
+
+```typescript
+const criticalIssues =
+  (data.critical_issues as Array<{ issue: string; recommendation: string }>) || [];
+```
+
+3. **Data Transformation**: Transform raw Supabase data into your typed interfaces:
+
+```typescript
+// Transform raw data into typed interface
+const transformedData: Analysis = {
+  id: data.id,
+  market_opportunity: data.market_opportunity as CategoryInsight,
+  // ... other fields
+};
+```
+
+### Best Practices
+
+1. Define your TypeScript interfaces in a central location (`types/` directory)
+2. Use explicit type assertions rather than type casting
+3. Add fallback values for nullable fields
+4. Transform data immediately after fetching from Supabase
+5. Validate the shape of JSON data before using it
+
+### Common Pitfalls
+
+1. Assuming JSON fields are non-null
+2. Not handling potential type mismatches
+3. Using type casting instead of explicit transformation
+4. Not validating JSON structure before use
+
 ---
 
 ## Table of Contents
