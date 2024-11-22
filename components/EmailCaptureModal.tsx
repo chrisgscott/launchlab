@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
-import type { Insights } from '@/types/supabase';
+import type { Insights } from '@/types/insights';
 
 /**
  * EmailCaptureModal component props.
@@ -46,6 +46,7 @@ export default function EmailCaptureModal({
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    console.log('📝 Starting report request...', { email, analysisId });
 
     try {
       const response = await fetch('/api/idea/async-report', {
@@ -59,17 +60,22 @@ export default function EmailCaptureModal({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start report generation');
+        const errorData = await response.json();
+        console.error('❌ Failed to start report generation:', errorData);
+        throw new Error(errorData.error || 'Failed to start report generation');
       }
+
+      const data = await response.json();
+      console.log('✅ Report generation started successfully:', data);
 
       // Show success message and close modal immediately
       toast.success(
-        "We're generating your validation roadmap! We'll email you a secure link when it's ready (usually within 2-3 minutes).",
+        "We're generating your blueprint! We'll email you a secure link when it's ready (usually within 2-3 minutes).",
         { duration: 7000 }
       );
       onClose();
     } catch (err) {
-      console.error('Error submitting email:', err);
+      console.error('❌ Error submitting email:', err);
       setError('Failed to submit email. Please try again.');
       setIsSubmitting(false);
     }
@@ -89,39 +95,36 @@ export default function EmailCaptureModal({
         </button>
 
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Get Your Validation Roadmap</h2>
+          <h2 className="text-2xl font-bold mb-4">Get Your Validation Blueprint</h2>
           <p className="mb-4">
-            We'll analyze your idea and send you a personalized validation roadmap with actionable
-            next steps to test your assumptions.
+            We'll analyze your idea and send you a personalized validation blueprint with actionable
+            next steps to test your assumptions and launch successfully.
           </p>
           <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full p-2 border rounded mb-4"
-              required
-              disabled={isSubmitting}
-            />
-            {error && <div className="text-red-500 mb-4">{error}</div>}
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Where should we send your blueprint?</span>
+              </label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                className="input input-bordered w-full"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
                 disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Get Roadmap'}
-              </button>
+              />
             </div>
+
+            {error && <div className="text-error text-sm mt-2">{error}</div>}
+
+            <button
+              type="submit"
+              className={`btn btn-primary w-full mt-4 ${isSubmitting ? 'loading' : ''}`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Preparing Your Blueprint...' : 'Get Your Free Blueprint'}
+            </button>
           </form>
         </div>
       </div>

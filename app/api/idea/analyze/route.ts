@@ -4,27 +4,35 @@ import { z } from 'zod';
 import { createClient } from '@/libs/supabase/server';
 
 // Initialize OpenAI client
+const apiKey = process.env.OPENAI_API_KEY;
+const model = process.env.OPENAI_MODEL || 'gpt-4o-mini-2024-07-18';
+
+if (!apiKey) {
+  throw new Error('OPENAI_API_KEY is not set');
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: apiKey,
 });
 
 // Validation schema for the request body
 const AnalyzeRequestSchema = z.object({
-  problemStatement: z.string(),
-  targetAudience: z.string(),
-  uniqueValueProposition: z.string(),
-  productDescription: z.string(),
+  idea_name: z.string(),
+  problem_statement: z.string(),
+  target_audience: z.string(),
+  unique_value_proposition: z.string(),
+  product_description: z.string(),
 });
 
 // Define the structure we want from OpenAI
 const ANALYSIS_SCHEMA = {
   name: 'startup_analysis',
-  description: 'Analyze a startup idea and provide structured insights with a space launch theme',
+  description: 'Analyze a startup idea and provide structured insights',
   parameters: {
     type: 'object',
     properties: {
       // Core Factors (60% of total)
-      marketOpportunity: {
+      market_opportunity: {
         type: 'object',
         description: 'Market size and growth potential (25% of total score)',
         properties: {
@@ -36,11 +44,15 @@ const ANALYSIS_SCHEMA = {
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
+                action_steps: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
               },
               required: ['title', 'description'],
             },
           },
-          improvementTips: {
+          improvement_tips: {
             type: 'array',
             description: 'Three brief, actionable tips for improvement',
             items: { type: 'string' },
@@ -48,9 +60,9 @@ const ANALYSIS_SCHEMA = {
             maxItems: 3,
           },
         },
-        required: ['score', 'insights', 'improvementTips'],
+        required: ['score', 'insights', 'improvement_tips'],
       },
-      competitiveAdvantage: {
+      competitive_advantage: {
         type: 'object',
         description: 'Unique value proposition and barriers to entry (20% of total score)',
         properties: {
@@ -62,11 +74,15 @@ const ANALYSIS_SCHEMA = {
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
+                action_steps: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
               },
               required: ['title', 'description'],
             },
           },
-          improvementTips: {
+          improvement_tips: {
             type: 'array',
             description: 'Three brief, actionable tips for improvement',
             items: { type: 'string' },
@@ -74,7 +90,7 @@ const ANALYSIS_SCHEMA = {
             maxItems: 3,
           },
         },
-        required: ['score', 'insights', 'improvementTips'],
+        required: ['score', 'insights', 'improvement_tips'],
       },
       feasibility: {
         type: 'object',
@@ -88,11 +104,15 @@ const ANALYSIS_SCHEMA = {
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
+                action_steps: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
               },
               required: ['title', 'description'],
             },
           },
-          improvementTips: {
+          improvement_tips: {
             type: 'array',
             description: 'Three brief, actionable tips for improvement',
             items: { type: 'string' },
@@ -100,10 +120,10 @@ const ANALYSIS_SCHEMA = {
             maxItems: 3,
           },
         },
-        required: ['score', 'insights', 'improvementTips'],
+        required: ['score', 'insights', 'improvement_tips'],
       },
       // Supporting Factors (40% of total)
-      revenuePotential: {
+      revenue_potential: {
         type: 'object',
         description: 'Revenue model and financial projections (15% of total score)',
         properties: {
@@ -115,11 +135,15 @@ const ANALYSIS_SCHEMA = {
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
+                action_steps: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
               },
               required: ['title', 'description'],
             },
           },
-          improvementTips: {
+          improvement_tips: {
             type: 'array',
             description: 'Three brief, actionable tips for improvement',
             items: { type: 'string' },
@@ -127,9 +151,9 @@ const ANALYSIS_SCHEMA = {
             maxItems: 3,
           },
         },
-        required: ['score', 'insights', 'improvementTips'],
+        required: ['score', 'insights', 'improvement_tips'],
       },
-      marketTiming: {
+      market_timing: {
         type: 'object',
         description: 'Current market conditions and technological readiness (15% of total score)',
         properties: {
@@ -141,11 +165,15 @@ const ANALYSIS_SCHEMA = {
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
+                action_steps: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
               },
               required: ['title', 'description'],
             },
           },
-          improvementTips: {
+          improvement_tips: {
             type: 'array',
             description: 'Three brief, actionable tips for improvement',
             items: { type: 'string' },
@@ -153,7 +181,7 @@ const ANALYSIS_SCHEMA = {
             maxItems: 3,
           },
         },
-        required: ['score', 'insights', 'improvementTips'],
+        required: ['score', 'insights', 'improvement_tips'],
       },
       scalability: {
         type: 'object',
@@ -167,11 +195,15 @@ const ANALYSIS_SCHEMA = {
               properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
+                action_steps: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
               },
               required: ['title', 'description'],
             },
           },
-          improvementTips: {
+          improvement_tips: {
             type: 'array',
             description: 'Three brief, actionable tips for improvement',
             items: { type: 'string' },
@@ -179,19 +211,19 @@ const ANALYSIS_SCHEMA = {
             maxItems: 3,
           },
         },
-        required: ['score', 'insights', 'improvementTips'],
+        required: ['score', 'insights', 'improvement_tips'],
       },
       // Overall Analysis
-      totalScore: {
+      total_score: {
         type: 'number',
         description: 'Calculated total score out of 100',
       },
-      validationStatus: {
+      validation_status: {
         type: 'string',
         enum: ['READY TO VALIDATE', 'NEEDS REFINEMENT', 'MAJOR CONCERNS'],
         description: 'Overall validation status based on total score',
       },
-      criticalIssues: {
+      critical_issues: {
         type: 'array',
         description: 'List of critical issues that could be immediate disqualifiers',
         items: {
@@ -203,31 +235,17 @@ const ANALYSIS_SCHEMA = {
           required: ['issue', 'recommendation'],
         },
       },
-      nextSteps: {
-        type: 'array',
-        description: 'Recommended next steps based on the analysis',
-        items: {
-          type: 'object',
-          properties: {
-            title: { type: 'string' },
-            description: { type: 'string' },
-            priority: { type: 'string', enum: ['HIGH', 'MEDIUM', 'LOW'] },
-          },
-          required: ['title', 'description', 'priority'],
-        },
-      },
     },
     required: [
-      'marketOpportunity',
-      'competitiveAdvantage',
+      'market_opportunity',
+      'competitive_advantage',
       'feasibility',
-      'revenuePotential',
-      'marketTiming',
+      'revenue_potential',
+      'market_timing',
       'scalability',
-      'totalScore',
-      'validationStatus',
-      'criticalIssues',
-      'nextSteps',
+      'total_score',
+      'validation_status',
+      'critical_issues',
     ],
   },
 };
@@ -247,7 +265,7 @@ export async function POST(request: Request) {
     console.log('Calling OpenAI with schema:', JSON.stringify(ANALYSIS_SCHEMA, null, 2));
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini-2024-07-18',
+      model: model,
       messages: [
         {
           role: 'system',
@@ -300,9 +318,9 @@ For each factor:
    - Focused on the most impactful changes first
 
 Calculate a total score out of 100 using the weighted factors and determine the status:
-- 70-100: You're onto something big here
-- 50-69: Promising, but needs some work
-- <50: Time to pivot - here's why
+- 70-100: READY TO VALIDATE - You're onto something big here
+- 50-69: NEEDS REFINEMENT - Promising, but needs some work
+- <50: MAJOR CONCERNS - Time to pivot - here's why
 
 Call out any major red flags that could kill this idea:
 - Legal/regulatory roadblocks
@@ -327,10 +345,11 @@ Remember: We're here to help entrepreneurs succeed, not to crush dreams or blow 
           role: 'user',
           content: `Analyze this business idea:
     
-Problem Statement: ${validatedData.problemStatement}
-Target Audience: ${validatedData.targetAudience}
-Unique Value Proposition: ${validatedData.uniqueValueProposition}
-Product Description: ${validatedData.productDescription}`,
+Idea Name: ${validatedData.idea_name}
+Problem Statement: ${validatedData.problem_statement}
+Target Audience: ${validatedData.target_audience}
+Unique Value Proposition: ${validatedData.unique_value_proposition}
+Product Description: ${validatedData.product_description}`,
         },
       ],
       temperature: 0.7,
@@ -338,8 +357,7 @@ Product Description: ${validatedData.productDescription}`,
       functions: [
         {
           name: 'startup_analysis',
-          description:
-            'Analyze a startup idea and provide structured insights with a space launch theme',
+          description: 'Analyze a startup idea and provide structured insights',
           parameters: ANALYSIS_SCHEMA.parameters,
         },
       ],
@@ -364,8 +382,8 @@ Product Description: ${validatedData.productDescription}`,
     const analysis = JSON.parse(message.function_call.arguments);
 
     // Map the validation status to our allowed values
-    const score = analysis.totalScore;
-    analysis.validationStatus =
+    const score = analysis.total_score;
+    analysis.validation_status =
       score >= 70 ? 'READY TO VALIDATE' : score >= 50 ? 'NEEDS REFINEMENT' : 'MAJOR CONCERNS';
 
     console.log('Parsed analysis:', JSON.stringify(analysis, null, 2));
@@ -373,13 +391,22 @@ Product Description: ${validatedData.productDescription}`,
     // Save to Supabase
     const supabase = createClient();
     const { data: savedAnalysis, error: dbError } = await supabase
-      .from('idea_analyses')
+      .from('idea_insights')
       .insert({
-        problem_statement: validatedData.problemStatement,
-        target_audience: validatedData.targetAudience,
-        unique_value_proposition: validatedData.uniqueValueProposition,
-        product_description: validatedData.productDescription,
-        insights: analysis,
+        idea_name: validatedData.idea_name,
+        problem_statement: validatedData.problem_statement,
+        target_audience: validatedData.target_audience,
+        unique_value_proposition: validatedData.unique_value_proposition,
+        product_description: validatedData.product_description,
+        total_score: Math.round(analysis.total_score),
+        validation_status: analysis.validation_status,
+        market_opportunity: analysis.market_opportunity,
+        competitive_advantage: analysis.competitive_advantage,
+        feasibility: analysis.feasibility,
+        revenue_potential: analysis.revenue_potential,
+        market_timing: analysis.market_timing,
+        scalability: analysis.scalability,
+        critical_issues: analysis.critical_issues,
       })
       .select('id')
       .single();
@@ -401,20 +428,12 @@ Product Description: ${validatedData.productDescription}`,
     });
 
     if (error instanceof z.ZodError) {
-      console.log('Validation error:', JSON.stringify(error.errors, null, 2));
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
         { status: 400 }
       );
     }
 
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: error.message,
-        details: error instanceof Error ? error.stack : undefined,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to analyze idea' }, { status: 500 });
   }
 }

@@ -16,26 +16,32 @@ import {
   HelpCircle,
   CheckCircle2,
   BookOpen,
+  BookmarkPlus,
 } from 'lucide-react';
 
 // Zod schema for validation
 const IdeaSchema = z.object({
-  problemStatement: z
+  idea_name: z
+    .string()
+    .min(5, { message: 'Idea name must be at least 5 characters' })
+    .max(100, { message: 'Idea name must be less than 100 characters' }),
+
+  problem_statement: z
     .string()
     .min(20, { message: 'Problem statement must be at least 20 characters' })
     .max(500, { message: 'Problem statement must be less than 500 characters' }),
 
-  targetAudience: z
+  target_audience: z
     .string()
     .min(10, { message: 'Target audience description must be at least 10 characters' })
     .max(500, { message: 'Target audience description must be less than 500 characters' }),
 
-  uniqueValueProposition: z
+  unique_value_proposition: z
     .string()
     .min(20, { message: 'Unique value proposition must be at least 20 characters' })
     .max(500, { message: 'Unique value proposition must be less than 500 characters' }),
 
-  productDescription: z
+  product_description: z
     .string()
     .min(30, { message: 'Product description must be at least 30 characters' })
     .max(1000, { message: 'Product description must be less than 1000 characters' }),
@@ -43,67 +49,79 @@ const IdeaSchema = z.object({
 
 // Educational content for each section
 const educationalContent = {
-  problemStatement: {
+  idea_name: {
+    title: 'Naming Your Idea',
+    tips: [
+      'Keep it short and memorable',
+      'Make it relevant to your solution',
+      'Consider domain name availability',
+      'Avoid names that limit future growth',
+    ],
+    examples: [
+      {
+        text: 'InventoryAI - A clear name that combines the core function (inventory) with the key technology (AI)',
+        explanation:
+          'This name is descriptive, memorable, and suggests technological innovation without being too limiting.',
+      },
+    ],
+  },
+  problem_statement: {
     title: 'Crafting a Strong Problem Statement',
     tips: [
       'Focus on the pain point, not your solution',
       'Quantify the problem if possible (time lost, money wasted, etc.)',
       'Explain who experiences this problem and how often',
-      'Describe the current alternatives and their limitations',
     ],
     examples: [
       {
-        good: 'Small business owners spend 5-10 hours weekly on manual inventory counts, leading to frequent stockouts and lost sales of up to $2,000 monthly.',
+        text: 'Small business owners waste 5-10 hours per week on manual inventory management, leading to $10,000+ in annual losses from stockouts and overstocking.',
         explanation:
           'This statement quantifies the problem, identifies the audience, and shows clear business impact.',
       },
     ],
   },
-  targetAudience: {
+  target_audience: {
     title: 'Defining Your Target Audience',
     tips: [
       'Be specific about demographics and behaviors',
       'Include relevant characteristics (job role, company size, budget)',
       'Consider both primary and secondary users',
-      'Think about purchasing power and decision-making authority',
     ],
     examples: [
       {
-        good: 'E-commerce store owners with 100-1000 SKUs, $50K-$500K annual revenue, who currently use spreadsheets and struggle with seasonal demand planning.',
+        text: 'Small to medium-sized e-commerce businesses ($500K-$5M annual revenue) using basic inventory tracking spreadsheets, struggling with stockouts during peak seasons.',
         explanation:
           'This description includes business size, current solution, and specific pain point.',
       },
     ],
   },
-  uniqueValueProposition: {
+  unique_value_proposition: {
     title: 'Creating a Compelling Value Proposition',
     tips: [
       'Focus on benefits, not features',
       'Explain why your solution is better than alternatives',
       'Address specific pain points from your problem statement',
-      'Quantify the value when possible (time saved, ROI, etc.)',
     ],
     examples: [
       {
-        good: 'Our AI reduces inventory costs by 30% while preventing stockouts through predictive analytics, giving small businesses the same advantages as large retailers at 1/10th the cost.',
+        text: 'Our AI-powered inventory management reduces stockouts by 90% and saves 8+ hours per week, all while being 50% cheaper than enterprise solutions.',
         explanation:
           "This UVP quantifies the benefit, compares to alternatives, and addresses the target market's needs.",
       },
     ],
   },
-  productDescription: {
+  product_description: {
     title: 'Describing Your Solution',
     tips: [
       'Explain how it works in simple terms',
       'Highlight key features and their benefits',
       'Address potential concerns or objections',
-      'Include integration/implementation details',
     ],
     examples: [
       {
-        good: 'Our mobile app connects to your POS system, automatically tracks sales and stock levels, and uses AI to predict future demand. It sends real-time alerts for low stock and generates one-click purchase orders based on vendor prices and lead times.',
+        text: 'Our cloud-based platform combines real-time sales data with AI to predict inventory needs. It integrates with popular e-commerce platforms, sends automated reorder alerts, and provides a mobile app for on-the-go management.',
         explanation:
-          'This description covers the key features, how it works, and practical implementation details.',
+          'This description outlines key features, explains the technology, and highlights ease of use.',
       },
     ],
   },
@@ -194,7 +212,7 @@ const IdeaInput: React.FC = () => {
             {content.examples.map((example, index) => (
               <div key={index} className="space-y-2">
                 <div className="bg-base-100 p-3 rounded border-l-4 border-success text-sm">
-                  {example.good}
+                  {example.text}
                 </div>
                 <p className="text-sm opacity-70 italic">Why this works: {example.explanation}</p>
               </div>
@@ -207,6 +225,51 @@ const IdeaInput: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Idea Name */}
+      <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
+        <div className="card-body">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2">
+              <BookmarkPlus className="w-6 h-6 text-primary" />
+              <h2 className="card-title">Name your idea</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveGuide(activeGuide === 'idea_name' ? null : 'idea_name')}
+              className="btn btn-ghost btn-sm btn-circle"
+            >
+              <HelpCircle
+                className={`w-5 h-5 ${activeGuide === 'idea_name' ? 'text-primary' : 'opacity-50'}`}
+              />
+            </button>
+          </div>
+          <p className="text-sm opacity-70 mb-4 ml-9">
+            Give your idea a memorable name. This will help you identify it later.
+          </p>
+          <Controller
+            name="idea_name"
+            control={control}
+            render={({ field }) => (
+              <div>
+                <input
+                  {...field}
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="Example: StudyFlow, TaskMaster Pro, etc."
+                />
+                {errors.idea_name && (
+                  <p className="text-error text-sm mt-2 flex items-center gap-1">
+                    <XCircle className="w-4 h-4" />
+                    {errors.idea_name.message}
+                  </p>
+                )}
+              </div>
+            )}
+          />
+          {activeGuide === 'idea_name' && renderEducationalGuide('idea_name')}
+        </div>
+      </div>
+
       {/* Problem Statement */}
       <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
         <div className="card-body">
@@ -220,12 +283,12 @@ const IdeaInput: React.FC = () => {
             <button
               type="button"
               onClick={() =>
-                setActiveGuide(activeGuide === 'problemStatement' ? null : 'problemStatement')
+                setActiveGuide(activeGuide === 'problem_statement' ? null : 'problem_statement')
               }
               className="btn btn-ghost btn-sm btn-circle"
             >
               <HelpCircle
-                className={`w-5 h-5 ${activeGuide === 'problemStatement' ? 'text-primary' : 'opacity-50'}`}
+                className={`w-5 h-5 ${activeGuide === 'problem_statement' ? 'text-primary' : 'opacity-50'}`}
               />
             </button>
           </div>
@@ -234,7 +297,7 @@ const IdeaInput: React.FC = () => {
             What needs aren't being met?
           </p>
           <Controller
-            name="problemStatement"
+            name="problem_statement"
             control={control}
             render={({ field }) => (
               <div>
@@ -243,16 +306,16 @@ const IdeaInput: React.FC = () => {
                   className="textarea textarea-bordered w-full h-32 focus:textarea-primary transition-colors duration-200"
                   placeholder="Example: Many small business owners struggle to manage their inventory efficiently, leading to stockouts and overstocking that hurt their bottom line..."
                 />
-                {errors.problemStatement && (
+                {errors.problem_statement && (
                   <p className="text-error text-sm mt-2 flex items-center gap-1">
                     <XCircle className="w-4 h-4" />
-                    {errors.problemStatement.message}
+                    {errors.problem_statement.message}
                   </p>
                 )}
               </div>
             )}
           />
-          {activeGuide === 'problemStatement' && renderEducationalGuide('problemStatement')}
+          {activeGuide === 'problem_statement' && renderEducationalGuide('problem_statement')}
         </div>
       </div>
 
@@ -269,12 +332,12 @@ const IdeaInput: React.FC = () => {
             <button
               type="button"
               onClick={() =>
-                setActiveGuide(activeGuide === 'targetAudience' ? null : 'targetAudience')
+                setActiveGuide(activeGuide === 'target_audience' ? null : 'target_audience')
               }
               className="btn btn-ghost btn-sm btn-circle"
             >
               <HelpCircle
-                className={`w-5 h-5 ${activeGuide === 'targetAudience' ? 'text-primary' : 'opacity-50'}`}
+                className={`w-5 h-5 ${activeGuide === 'target_audience' ? 'text-primary' : 'opacity-50'}`}
               />
             </button>
           </div>
@@ -283,7 +346,7 @@ const IdeaInput: React.FC = () => {
             characteristics?
           </p>
           <Controller
-            name="targetAudience"
+            name="target_audience"
             control={control}
             render={({ field }) => (
               <div>
@@ -292,16 +355,16 @@ const IdeaInput: React.FC = () => {
                   className="textarea textarea-bordered w-full h-32 focus:textarea-primary transition-colors duration-200"
                   placeholder="Example: Small retail business owners with 1-10 employees, managing inventory worth $10,000-$100,000, who are tech-savvy but time-constrained..."
                 />
-                {errors.targetAudience && (
+                {errors.target_audience && (
                   <p className="text-error text-sm mt-2 flex items-center gap-1">
                     <XCircle className="w-4 h-4" />
-                    {errors.targetAudience.message}
+                    {errors.target_audience.message}
                   </p>
                 )}
               </div>
             )}
           />
-          {activeGuide === 'targetAudience' && renderEducationalGuide('targetAudience')}
+          {activeGuide === 'target_audience' && renderEducationalGuide('target_audience')}
         </div>
       </div>
 
@@ -319,13 +382,13 @@ const IdeaInput: React.FC = () => {
               type="button"
               onClick={() =>
                 setActiveGuide(
-                  activeGuide === 'uniqueValueProposition' ? null : 'uniqueValueProposition'
+                  activeGuide === 'unique_value_proposition' ? null : 'unique_value_proposition'
                 )
               }
               className="btn btn-ghost btn-sm btn-circle"
             >
               <HelpCircle
-                className={`w-5 h-5 ${activeGuide === 'uniqueValueProposition' ? 'text-primary' : 'opacity-50'}`}
+                className={`w-5 h-5 ${activeGuide === 'unique_value_proposition' ? 'text-primary' : 'opacity-50'}`}
               />
             </button>
           </div>
@@ -334,7 +397,7 @@ const IdeaInput: React.FC = () => {
             alternatives?
           </p>
           <Controller
-            name="uniqueValueProposition"
+            name="unique_value_proposition"
             control={control}
             render={({ field }) => (
               <div>
@@ -343,17 +406,17 @@ const IdeaInput: React.FC = () => {
                   className="textarea textarea-bordered w-full h-32 focus:textarea-primary transition-colors duration-200"
                   placeholder="Example: Our AI-powered inventory management system learns from historical data to predict demand patterns and automatically suggests optimal stock levels..."
                 />
-                {errors.uniqueValueProposition && (
+                {errors.unique_value_proposition && (
                   <p className="text-error text-sm mt-2 flex items-center gap-1">
                     <XCircle className="w-4 h-4" />
-                    {errors.uniqueValueProposition.message}
+                    {errors.unique_value_proposition.message}
                   </p>
                 )}
               </div>
             )}
           />
-          {activeGuide === 'uniqueValueProposition' &&
-            renderEducationalGuide('uniqueValueProposition')}
+          {activeGuide === 'unique_value_proposition' &&
+            renderEducationalGuide('unique_value_proposition')}
         </div>
       </div>
 
@@ -370,12 +433,12 @@ const IdeaInput: React.FC = () => {
             <button
               type="button"
               onClick={() =>
-                setActiveGuide(activeGuide === 'productDescription' ? null : 'productDescription')
+                setActiveGuide(activeGuide === 'product_description' ? null : 'product_description')
               }
               className="btn btn-ghost btn-sm btn-circle"
             >
               <HelpCircle
-                className={`w-5 h-5 ${activeGuide === 'productDescription' ? 'text-primary' : 'opacity-50'}`}
+                className={`w-5 h-5 ${activeGuide === 'product_description' ? 'text-primary' : 'opacity-50'}`}
               />
             </button>
           </div>
@@ -383,7 +446,7 @@ const IdeaInput: React.FC = () => {
             Provide details about how your solution works. What are the key features and benefits?
           </p>
           <Controller
-            name="productDescription"
+            name="product_description"
             control={control}
             render={({ field }) => (
               <div>
@@ -392,16 +455,16 @@ const IdeaInput: React.FC = () => {
                   className="textarea textarea-bordered w-full h-32 focus:textarea-primary transition-colors duration-200"
                   placeholder="Example: Our mobile app integrates with point-of-sale systems, uses machine learning for demand forecasting, and provides real-time alerts for low stock..."
                 />
-                {errors.productDescription && (
+                {errors.product_description && (
                   <p className="text-error text-sm mt-2 flex items-center gap-1">
                     <XCircle className="w-4 h-4" />
-                    {errors.productDescription.message}
+                    {errors.product_description.message}
                   </p>
                 )}
               </div>
             )}
           />
-          {activeGuide === 'productDescription' && renderEducationalGuide('productDescription')}
+          {activeGuide === 'product_description' && renderEducationalGuide('product_description')}
         </div>
       </div>
 

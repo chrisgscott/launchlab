@@ -10,12 +10,17 @@ export const sendOpenAi = async (
   const url = 'https://api.openai.com/v1/chat/completions';
 
   console.log('Ask GPT >>>');
-  messages.map((m) =>
-    console.log(' - ' + m.role.toUpperCase() + ': ' + m.content)
-  );
+  messages.map(m => console.log(' - ' + m.role.toUpperCase() + ': ' + m.content));
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini-2024-07-18';
+
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not set');
+  }
 
   const body = JSON.stringify({
-    model: 'gpt-4',
+    model,
     messages,
     max_tokens: max,
     temperature: temp,
@@ -24,7 +29,7 @@ export const sendOpenAi = async (
 
   const options = {
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
   };

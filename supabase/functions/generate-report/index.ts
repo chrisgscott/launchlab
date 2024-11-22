@@ -2,6 +2,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import OpenAI from 'https://esm.sh/openai@4.20.1';
+import { v4 as uuidv4 } from 'https://esm.sh/uuid@9.0.0';
 import { nanoid } from 'https://esm.sh/nanoid@5.0.4';
 
 const corsHeaders = {
@@ -11,20 +12,15 @@ const corsHeaders = {
 
 interface Report {
   id: string;
-  overall_score: number;
-  validation_status: 'Ready to Validate' | 'Needs Refinement' | 'Major Concerns';
-  
-  // The Big Picture
+  insight_id: string;
+  url: string;
+  slug: string;
   summary: string;
-  
-  // What I Love About This Idea
   key_strengths: {
     summary: string;
     points: string[];
     potential_impact: string;
   };
-  
-  // Making Money with This Idea
   monetization: {
     primary_stream: {
       approach: string;
@@ -33,7 +29,7 @@ interface Report {
       benefits: string[];
     };
     alternative_approaches: Array<{
-      model: 'Subscription' | 'One-Time Purchase' | 'Freemium';
+      model: string;
       implementation: string;
       best_for: string;
       pricing: string;
@@ -47,143 +43,117 @@ interface Report {
       adjustment_triggers: string[];
     };
   };
-  
-  // Making Your Idea Even Stronger
-  refinement_questions: string[];
-  
-  // Real Talk: Challenges to Prepare For
-  challenges: {
-    potential_pitfalls: Array<{
-      challenge: string;
-      context: string;
-    }>;
-    common_gotchas: Array<{
-      issue: string;
-      prevention: string;
-    }>;
-  };
-  
-  // Smart Ways to Address These Challenges
-  mitigation_strategies: Array<{
-    challenge: string;
-    actions: string[];
+  refinement_questions: Array<{
+    question: string;
+    context: string;
   }>;
-  
-  // My Honest Take
+  challenges: Array<{
+    challenge: string;
+    description: string;
+  }>;
+  mitigation_strategies: Array<{
+    strategy: string;
+    details: string;
+  }>;
   recommendation: {
-    verdict: string;
-    confidence: 'High' | 'Medium' | 'Low';
-    rationale: string;
+    recommendation: string;
+    priority: string;
+    timeline: string;
   };
-  
-  // Your Next Steps (if Ready to Validate)
-  next_steps?: {
-    ideal_customers: {
-      profile: string;
-      channels: string[];
-      influencers: string[];
-      pain_points: string[];
-      approach_strategy: string;
-    };
-    validation_questions: string[];
-  };
-  
-  // Areas to Improve (if Needs Refinement)
+  next_steps?: Array<{
+    title: string;
+    description: string;
+    priority: string;
+  }>;
   improvement_areas?: Array<{
     area: string;
-    suggestions: string[];
+    details: string;
   }>;
 }
 
 interface RequestBody {
-  analysisId: string;
-  email: string;
+  insight_id: string;
 }
 
 interface Analysis {
   id: string;
+  idea_name: string;
   problem_statement: string;
   target_audience: string;
   unique_value_proposition: string;
   product_description: string;
-  insights: {
-    totalScore: number;
-    validationStatus: string;
-    criticalIssues: Array<{
-      issue: string;
-      recommendation: string;
-    }>;
-    nextSteps: Array<{
+  total_score: number;
+  validation_status: string;
+  market_opportunity: {
+    score: number;
+    insights: Array<{
       title: string;
       description: string;
-      priority: 'HIGH' | 'MEDIUM' | 'LOW';
+      action_steps?: string[];
     }>;
-    marketOpportunity: {
-      score: number;
-      insights: Array<{
-        title: string;
-        description: string;
-        actionSteps?: string[];
-      }>;
-      improvementTips?: string[];
-    };
-    competitiveAdvantage: {
-      score: number;
-      insights: Array<{
-        title: string;
-        description: string;
-        actionSteps?: string[];
-      }>;
-      improvementTips?: string[];
-    };
-    feasibility: {
-      score: number;
-      insights: Array<{
-        title: string;
-        description: string;
-        actionSteps?: string[];
-      }>;
-      improvementTips?: string[];
-    };
-    revenuePotential: {
-      score: number;
-      insights: Array<{
-        title: string;
-        description: string;
-        actionSteps?: string[];
-      }>;
-      improvementTips?: string[];
-    };
-    marketTiming: {
-      score: number;
-      insights: Array<{
-        title: string;
-        description: string;
-        actionSteps?: string[];
-      }>;
-      improvementTips?: string[];
-    };
-    scalability: {
-      score: number;
-      insights: Array<{
-        title: string;
-        description: string;
-        actionSteps?: string[];
-      }>;
-      improvementTips?: string[];
-    };
+    improvement_tips?: string[];
   };
+  competitive_advantage: {
+    score: number;
+    insights: Array<{
+      title: string;
+      description: string;
+      action_steps?: string[];
+    }>;
+    improvement_tips?: string[];
+  };
+  feasibility: {
+    score: number;
+    insights: Array<{
+      title: string;
+      description: string;
+      action_steps?: string[];
+    }>;
+    improvement_tips?: string[];
+  };
+  revenue_potential: {
+    score: number;
+    insights: Array<{
+      title: string;
+      description: string;
+      action_steps?: string[];
+    }>;
+    improvement_tips?: string[];
+  };
+  market_timing: {
+    score: number;
+    insights: Array<{
+      title: string;
+      description: string;
+      action_steps?: string[];
+    }>;
+    improvement_tips?: string[];
+  };
+  scalability: {
+    score: number;
+    insights: Array<{
+      title: string;
+      description: string;
+      action_steps?: string[];
+    }>;
+    improvement_tips?: string[];
+  };
+  critical_issues: Array<{
+    issue: string;
+    recommendation: string;
+  }>;
+  next_steps: Array<{
+    title: string;
+    description: string;
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  }>;
 }
 
 /**
  * Utility function to retry failed operations with exponential backoff
  * Useful for handling transient API failures
  */
-async function withRetry<T>(
-  operation: () => Promise<T>,
-  retries = 2,
-  delay = 1000
-): Promise<T> {
+async function withRetry<T>(operation: () => Promise<T>, retries = 2, delay = 1000): Promise<T> {
   try {
     return await operation();
   } catch (error) {
@@ -205,26 +175,26 @@ Unique Value Proposition: ${analysis.unique_value_proposition}
 Product Description: ${analysis.product_description}
 
 Previous Analysis Insights:
-Market Opportunity Score: ${analysis.insights.marketOpportunity.score}/100
-${analysis.insights.marketOpportunity.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
+Market Opportunity Score: ${analysis.market_opportunity.score}/100
+${analysis.market_opportunity.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
 
-Competitive Advantage Score: ${analysis.insights.competitiveAdvantage.score}/100
-${analysis.insights.competitiveAdvantage.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
+Competitive Advantage Score: ${analysis.competitive_advantage.score}/100
+${analysis.competitive_advantage.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
 
-Feasibility Score: ${analysis.insights.feasibility.score}/100
-${analysis.insights.feasibility.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
+Feasibility Score: ${analysis.feasibility.score}/100
+${analysis.feasibility.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
 
-Revenue Potential Score: ${analysis.insights.revenuePotential.score}/100
-${analysis.insights.revenuePotential.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
+Revenue Potential Score: ${analysis.revenue_potential.score}/100
+${analysis.revenue_potential.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
 
-Market Timing Score: ${analysis.insights.marketTiming.score}/100
-${analysis.insights.marketTiming.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
+Market Timing Score: ${analysis.market_timing.score}/100
+${analysis.market_timing.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
 
-Scalability Score: ${analysis.insights.scalability.score}/100
-${analysis.insights.scalability.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
+Scalability Score: ${analysis.scalability.score}/100
+${analysis.scalability.insights.map(i => `- ${i.title}: ${i.description}`).join('\n')}
 
 Critical Issues Identified:
-${analysis.insights.criticalIssues.map(i => `- ${i.issue}: ${i.recommendation}`).join('\n')}
+${analysis.critical_issues.map(i => `- ${i.issue}: ${i.recommendation}`).join('\n')}
 
 Please analyze this information and generate a comprehensive report with the following sections:
 
@@ -281,12 +251,12 @@ async function generateCategoryAnalysis(
   return withRetry(async () => {
     // Map our category name to the insights field name
     const categoryToField: { [key: string]: string } = {
-      'marketOpportunity': 'marketOpportunity',
-      'competitiveAdvantage': 'competitiveAdvantage',
-      'feasibility': 'feasibility',
-      'revenuePotential': 'revenuePotential',
-      'marketTiming': 'marketTiming',
-      'scalability': 'scalability'
+      marketOpportunity: 'market_opportunity',
+      competitiveAdvantage: 'competitive_advantage',
+      feasibility: 'feasibility',
+      revenuePotential: 'revenue_potential',
+      marketTiming: 'market_timing',
+      scalability: 'scalability',
     };
 
     const fieldName = categoryToField[category];
@@ -295,22 +265,24 @@ async function generateCategoryAnalysis(
     }
 
     const categoryData = analysis.insights[fieldName];
-    const criticalIssues = analysis.insights.criticalIssues?.filter(issue => 
-      issue.issue.toLowerCase().includes(category.toLowerCase()) ||
-      issue.recommendation.toLowerCase().includes(category.toLowerCase())
-    ) || [];
-    
+    const criticalIssues =
+      analysis.insights.critical_issues?.filter(
+        issue =>
+          issue.issue.toLowerCase().includes(category.toLowerCase()) ||
+          issue.recommendation.toLowerCase().includes(category.toLowerCase())
+      ) || [];
+
     const completion = await openai.chat.completions.create({
       model,
       messages: [
         {
           role: 'system',
-          content: generateSystemPrompt(analysis)
+          content: generateSystemPrompt(analysis),
         },
         {
           role: 'user',
-          content: generateUserPrompt()
-        }
+          content: generateUserPrompt(),
+        },
       ],
       functions: [
         {
@@ -321,7 +293,7 @@ async function generateCategoryAnalysis(
             properties: {
               score: {
                 type: 'number',
-                description: 'Score out of 100'
+                description: 'Score out of 100',
               },
               strengths: {
                 type: 'object',
@@ -329,17 +301,17 @@ async function generateCategoryAnalysis(
                 properties: {
                   summary: {
                     type: 'string',
-                    description: 'Brief summary of what makes this idea strong'
+                    description: 'Brief summary of what makes this idea strong',
                   },
                   key_points: {
                     type: 'array',
                     items: {
-                      type: 'string'
+                      type: 'string',
                     },
-                    description: 'Bullet points highlighting specific strengths'
-                  }
+                    description: 'Bullet points highlighting specific strengths',
+                  },
                 },
-                required: ['summary', 'key_points']
+                required: ['summary', 'key_points'],
               },
               opportunities: {
                 type: 'object',
@@ -347,32 +319,32 @@ async function generateCategoryAnalysis(
                 properties: {
                   summary: {
                     type: 'string',
-                    description: 'Brief summary of the main opportunities'
+                    description: 'Brief summary of the main opportunities',
                   },
                   key_points: {
                     type: 'array',
                     items: {
-                      type: 'string'
+                      type: 'string',
                     },
-                    description: 'Bullet points highlighting specific opportunities'
-                  }
+                    description: 'Bullet points highlighting specific opportunities',
+                  },
                 },
-                required: ['summary', 'key_points']
+                required: ['summary', 'key_points'],
               },
               questions: {
                 type: 'array',
                 items: {
-                  type: 'string'
+                  type: 'string',
                 },
-                description: 'Key questions to consider for refining the idea'
-              }
+                description: 'Key questions to consider for refining the idea',
+              },
             },
-            required: ['score', 'strengths', 'opportunities', 'questions']
-          }
-        }
+            required: ['score', 'strengths', 'opportunities', 'questions'],
+          },
+        },
       ],
       function_call: { name: `analyze_${category.toLowerCase()}` },
-      temperature: 0.7
+      temperature: 0.7,
     });
 
     const result = completion.choices[0]?.message?.function_call?.arguments;
@@ -396,24 +368,36 @@ async function generateExecutiveSummary(
   analysis: any,
   categoryScores: CategoryResults,
   model: string
-): Promise<{ score: number; summary: string; key_strengths: { summary: string; key_points: string[] }; key_opportunities: { summary: string; key_points: string[] }; critical_questions: string[]; business_context: { problem_statement: string; target_audience: string; value_proposition: string; product_description: string } }> {
+): Promise<{
+  score: number;
+  summary: string;
+  key_strengths: { summary: string; key_points: string[] };
+  key_opportunities: { summary: string; key_points: string[] };
+  critical_questions: string[];
+  business_context: {
+    problem_statement: string;
+    target_audience: string;
+    value_proposition: string;
+    product_description: string;
+  };
+}> {
   // Use the existing total score and data from the insights
-  const totalScore = analysis.insights.totalScore;
-  const validationStatus = analysis.insights.validationStatus;
-  const criticalIssues = analysis.insights.criticalIssues || [];
-  const nextSteps = analysis.insights.nextSteps || [];
-  
+  const totalScore = analysis.insights.total_score;
+  const validationStatus = analysis.insights.validation_status;
+  const criticalIssues = analysis.insights.critical_issues || [];
+  const nextSteps = analysis.insights.next_steps || [];
+
   const completion = await openai.chat.completions.create({
     model,
     messages: [
       {
         role: 'system',
-        content: generateSystemPrompt(analysis)
+        content: generateSystemPrompt(analysis),
       },
       {
         role: 'user',
-        content: generateUserPrompt()
-      }
+        content: generateUserPrompt(),
+      },
     ],
     functions: [
       {
@@ -424,85 +408,98 @@ async function generateExecutiveSummary(
           properties: {
             overall_score: {
               type: 'number',
-              description: 'Overall score out of 100'
+              description: 'Overall score out of 100',
             },
             validation_status: {
               type: 'string',
-              description: 'Current validation status of the idea'
+              description: 'Current validation status of the idea',
             },
             summary: {
               type: 'string',
-              description: 'Brief overview of the business idea and its potential'
+              description: 'Brief overview of the business idea and its potential',
             },
             key_strengths: {
               type: 'object',
               properties: {
                 summary: {
                   type: 'string',
-                  description: 'Brief summary of the main strengths across all categories'
+                  description: 'Brief summary of the main strengths across all categories',
                 },
                 key_points: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Key strengths identified across all categories'
-                }
+                  description: 'Key strengths identified across all categories',
+                },
               },
-              required: ['summary', 'key_points']
+              required: ['summary', 'key_points'],
             },
             key_opportunities: {
               type: 'object',
               properties: {
                 summary: {
                   type: 'string',
-                  description: 'Brief summary of the main opportunities across all categories'
+                  description: 'Brief summary of the main opportunities across all categories',
                 },
                 key_points: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Key opportunities identified across all categories'
-                }
+                  description: 'Key opportunities identified across all categories',
+                },
               },
-              required: ['summary', 'key_points']
+              required: ['summary', 'key_points'],
             },
             critical_questions: {
               type: 'array',
               items: {
-                type: 'string'
+                type: 'string',
               },
-              description: 'Most important questions to address across all categories'
+              description: 'Most important questions to address across all categories',
             },
             business_context: {
               type: 'object',
               properties: {
                 problem_statement: {
                   type: 'string',
-                  description: 'Clear statement of the problem being solved'
+                  description: 'Clear statement of the problem being solved',
                 },
                 target_audience: {
                   type: 'string',
-                  description: 'Description of the target audience'
+                  description: 'Description of the target audience',
                 },
                 value_proposition: {
                   type: 'string',
-                  description: 'Unique value proposition'
+                  description: 'Unique value proposition',
                 },
                 product_description: {
                   type: 'string',
-                  description: 'Brief description of the product/service'
-                }
+                  description: 'Brief description of the product/service',
+                },
               },
-              required: ['problem_statement', 'target_audience', 'value_proposition', 'product_description']
-            }
+              required: [
+                'problem_statement',
+                'target_audience',
+                'value_proposition',
+                'product_description',
+              ],
+            },
           },
-          required: ['overall_score', 'validation_status', 'summary', 'key_strengths', 'key_opportunities', 'critical_questions', 'business_context']
-        }
-      }
+          required: [
+            'overall_score',
+            'validation_status',
+            'summary',
+            'key_strengths',
+            'key_opportunities',
+            'critical_questions',
+            'business_context',
+          ],
+        },
+      },
     ],
-    function_call: { name: 'generate_executive_summary' }
+    function_call: { name: 'generate_executive_summary' },
   });
 
   const result = completion.choices[0]?.message?.function_call?.arguments;
@@ -520,17 +517,14 @@ async function generateExecutiveSummary(
  * Generates detailed customer insights and messaging recommendations
  * Only called for high-scoring business ideas (score >= 70)
  */
-async function generateCustomerInsights(
-  openai: OpenAI,
-  analysis: any,
-  model: string
-) {
+async function generateCustomerInsights(openai: OpenAI, analysis: any, model: string) {
   // Get relevant insights from the previous analysis
-  const marketData = analysis.insights.marketOpportunity;
-  const targetAudienceInsights = marketData.insights.filter((insight: any) => 
-    insight.title.toLowerCase().includes('customer') ||
-    insight.title.toLowerCase().includes('user') ||
-    insight.title.toLowerCase().includes('audience')
+  const marketData = analysis.insights.market_opportunity;
+  const targetAudienceInsights = marketData.insights.filter(
+    (insight: any) =>
+      insight.title.toLowerCase().includes('customer') ||
+      insight.title.toLowerCase().includes('user') ||
+      insight.title.toLowerCase().includes('audience')
   );
 
   const completion = await openai.chat.completions.create({
@@ -538,17 +532,18 @@ async function generateCustomerInsights(
     messages: [
       {
         role: 'system',
-        content: generateSystemPrompt(analysis)
+        content: generateSystemPrompt(analysis),
       },
       {
         role: 'user',
-        content: generateUserPrompt()
-      }
+        content: generateUserPrompt(),
+      },
     ],
     functions: [
       {
         name: 'generate_customer_insights',
-        description: 'Generate customer insights and messaging recommendations that build upon existing analysis',
+        description:
+          'Generate customer insights and messaging recommendations that build upon existing analysis',
         parameters: {
           type: 'object',
           properties: {
@@ -557,74 +552,86 @@ async function generateCustomerInsights(
               properties: {
                 psychologicalProfile: {
                   type: 'string',
-                  description: 'Deep psychological understanding of the target customer, incorporating existing market insights'
+                  description:
+                    'Deep psychological understanding of the target customer, incorporating existing market insights',
                 },
                 painPoints: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Specific pain points identified from market analysis and target audience description'
+                  description:
+                    'Specific pain points identified from market analysis and target audience description',
                 },
                 desires: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Key desires and aspirations that align with the value proposition'
+                  description: 'Key desires and aspirations that align with the value proposition',
                 },
                 transformationStory: {
                   type: 'string',
-                  description: 'Narrative of how the product transforms the customer\'s life, based on problem statement and solution'
-                }
+                  description:
+                    "Narrative of how the product transforms the customer's life, based on problem statement and solution",
+                },
               },
-              required: ['psychologicalProfile', 'painPoints', 'desires', 'transformationStory']
+              required: ['psychologicalProfile', 'painPoints', 'desires', 'transformationStory'],
             },
             messaging: {
               type: 'object',
               properties: {
                 valueProposition: {
                   type: 'string',
-                  description: 'Core value message that resonates with the target audience'
+                  description: 'Core value message that resonates with the target audience',
                 },
                 keyMessages: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Main selling points that highlight unique benefits'
+                  description: 'Main selling points that highlight unique benefits',
                 },
                 toneAndVoice: {
                   type: 'string',
-                  description: 'Communication style that best connects with the target audience'
+                  description: 'Communication style that best connects with the target audience',
                 },
                 callToAction: {
                   type: 'string',
-                  description: 'Primary conversion action that drives user engagement'
+                  description: 'Primary conversion action that drives user engagement',
                 },
                 coreBenefits: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Key benefits that resonate with the identified customer profile'
+                  description: 'Key benefits that resonate with the identified customer profile',
                 },
                 targetedMessages: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Specific messages crafted for different aspects of the customer profile'
+                  description:
+                    'Specific messages crafted for different aspects of the customer profile',
                 },
                 valueStatements: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Clear value statements that connect pain points to solutions'
-                }
+                  description: 'Clear value statements that connect pain points to solutions',
+                },
               },
-              required: ['valueProposition', 'keyMessages', 'toneAndVoice', 'callToAction', 'coreBenefits', 'targetedMessages', 'valueStatements']
+              required: [
+                'valueProposition',
+                'keyMessages',
+                'toneAndVoice',
+                'callToAction',
+                'coreBenefits',
+                'targetedMessages',
+                'valueStatements',
+              ],
             },
             marketingRecommendations: {
               type: 'object',
@@ -632,26 +639,26 @@ async function generateCustomerInsights(
                 channels: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Best marketing channels to reach the target audience'
+                  description: 'Best marketing channels to reach the target audience',
                 },
                 contentIdeas: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Content marketing suggestions that align with audience interests'
+                  description: 'Content marketing suggestions that align with audience interests',
                 },
                 engagementStrategies: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'User engagement tactics to build community and loyalty'
-                }
+                  description: 'User engagement tactics to build community and loyalty',
+                },
               },
-              required: ['channels', 'contentIdeas', 'engagementStrategies']
+              required: ['channels', 'contentIdeas', 'engagementStrategies'],
             },
             validationPlan: {
               type: 'object',
@@ -663,20 +670,20 @@ async function generateCustomerInsights(
                     properties: {
                       statement: {
                         type: 'string',
-                        description: 'Clear hypothesis statement to test'
+                        description: 'Clear hypothesis statement to test',
                       },
                       metric: {
                         type: 'string',
-                        description: 'How to measure this hypothesis'
+                        description: 'How to measure this hypothesis',
                       },
                       target: {
                         type: 'string',
-                        description: 'Target metric that would validate this hypothesis'
-                      }
+                        description: 'Target metric that would validate this hypothesis',
+                      },
                     },
-                    required: ['statement', 'metric', 'target']
+                    required: ['statement', 'metric', 'target'],
                   },
-                  description: 'Key hypotheses to validate with the landing page'
+                  description: 'Key hypotheses to validate with the landing page',
                 },
                 successMetrics: {
                   type: 'array',
@@ -685,40 +692,40 @@ async function generateCustomerInsights(
                     properties: {
                       metric: {
                         type: 'string',
-                        description: 'Name of the success metric'
+                        description: 'Name of the success metric',
                       },
                       target: {
                         type: 'string',
-                        description: 'Target value or range'
+                        description: 'Target value or range',
                       },
                       rationale: {
                         type: 'string',
-                        description: 'Why this metric matters'
-                      }
+                        description: 'Why this metric matters',
+                      },
                     },
-                    required: ['metric', 'target', 'rationale']
+                    required: ['metric', 'target', 'rationale'],
                   },
-                  description: 'Key metrics to track for landing page success'
+                  description: 'Key metrics to track for landing page success',
                 },
                 timeline: {
                   type: 'object',
                   properties: {
                     validationPeriod: {
                       type: 'string',
-                      description: 'Recommended timeframe for validation'
+                      description: 'Recommended timeframe for validation',
                     },
                     milestones: {
                       type: 'array',
                       items: {
-                        type: 'string'
+                        type: 'string',
                       },
-                      description: 'Key milestones in the validation process'
-                    }
+                      description: 'Key milestones in the validation process',
+                    },
                   },
-                  required: ['validationPeriod', 'milestones']
-                }
+                  required: ['validationPeriod', 'milestones'],
+                },
               },
-              required: ['hypotheses', 'successMetrics', 'timeline']
+              required: ['hypotheses', 'successMetrics', 'timeline'],
             },
             nextSteps: {
               type: 'object',
@@ -730,27 +737,27 @@ async function generateCustomerInsights(
                     properties: {
                       action: {
                         type: 'string',
-                        description: 'Specific action to take'
+                        description: 'Specific action to take',
                       },
                       impact: {
                         type: 'string',
-                        description: 'Expected impact of this action'
+                        description: 'Expected impact of this action',
                       },
                       timeline: {
                         type: 'string',
-                        description: 'When this should be done'
-                      }
+                        description: 'When this should be done',
+                      },
                     },
-                    required: ['action', 'impact', 'timeline']
+                    required: ['action', 'impact', 'timeline'],
                   },
-                  description: 'Immediate next steps to take'
+                  description: 'Immediate next steps to take',
                 },
                 landingPageChecklist: {
                   type: 'array',
                   items: {
-                    type: 'string'
+                    type: 'string',
                   },
-                  description: 'Key elements to include in the landing page'
+                  description: 'Key elements to include in the landing page',
                 },
                 riskMitigation: {
                   type: 'array',
@@ -759,26 +766,32 @@ async function generateCustomerInsights(
                     properties: {
                       risk: {
                         type: 'string',
-                        description: 'Potential risk to address'
+                        description: 'Potential risk to address',
                       },
                       mitigation: {
                         type: 'string',
-                        description: 'Strategy to mitigate this risk'
-                      }
+                        description: 'Strategy to mitigate this risk',
+                      },
                     },
-                    required: ['risk', 'mitigation']
+                    required: ['risk', 'mitigation'],
                   },
-                  description: 'Strategies to mitigate identified risks'
-                }
+                  description: 'Strategies to mitigate identified risks',
+                },
               },
-              required: ['immediate', 'landingPageChecklist', 'riskMitigation']
-            }
+              required: ['immediate', 'landingPageChecklist', 'riskMitigation'],
+            },
           },
-          required: ['customerProfile', 'messaging', 'marketingRecommendations', 'validationPlan', 'nextSteps']
-        }
-      }
+          required: [
+            'customerProfile',
+            'messaging',
+            'marketingRecommendations',
+            'validationPlan',
+            'nextSteps',
+          ],
+        },
+      },
     ],
-    function_call: { name: 'generate_customer_insights' }
+    function_call: { name: 'generate_customer_insights' },
   });
 
   const result = completion.choices[0]?.message?.function_call?.arguments;
@@ -794,22 +807,52 @@ async function generateCustomerInsights(
  * Throws an error if any required field is missing or invalid
  */
 function validateAnalysis(analysis: any): analysis is Analysis {
-  const required = [
+  const requiredFields = [
+    'id',
+    'idea_name',
     'problem_statement',
     'target_audience',
     'unique_value_proposition',
-    'product_description'
+    'product_description',
+    'total_score',
+    'validation_status',
+    'market_opportunity',
+    'competitive_advantage',
+    'feasibility',
+    'revenue_potential',
+    'market_timing',
+    'scalability',
+    'critical_issues',
   ];
 
-  for (const field of required) {
-    if (!analysis[field] || typeof analysis[field] !== 'string') {
-      throw new Error(`Missing or invalid required field: ${field}`);
+  const missingFields = requiredFields.filter(field => !analysis[field]);
+  if (missingFields.length > 0) {
+    console.error('Missing required fields:', missingFields);
+    return false;
+  }
+
+  // Validate category scores and insights
+  const categoryFields = [
+    'market_opportunity',
+    'competitive_advantage',
+    'feasibility',
+    'revenue_potential',
+    'market_timing',
+    'scalability',
+  ];
+
+  for (const field of categoryFields) {
+    const category = analysis[field];
+    if (!category.score || !Array.isArray(category.insights)) {
+      console.error(`Invalid ${field} data:`, category);
+      return false;
     }
   }
 
-  // Check for has_insights boolean flag instead of insights string
-  if (analysis.has_insights !== undefined && typeof analysis.has_insights !== 'boolean') {
-    throw new Error('Invalid has_insights field: must be a boolean if present');
+  // Validate arrays
+  if (!Array.isArray(analysis.critical_issues)) {
+    console.error('critical_issues must be an array');
+    return false;
   }
 
   return true;
@@ -823,8 +866,8 @@ function validateAnalysis(analysis: any): analysis is Analysis {
  */
 async function generateReport(analysis: Analysis, supabaseClient: SupabaseClient): Promise<Report> {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
-  const model = Deno.env.get('OPENAI_MODEL') || 'gpt-4';
-  
+  const model = Deno.env.get('OPENAI_MODEL') || 'gpt-4o-mini-2024-07-18';
+
   if (!apiKey) {
     throw new Error('OpenAI API key is not configured');
   }
@@ -832,18 +875,18 @@ async function generateReport(analysis: Analysis, supabaseClient: SupabaseClient
   const openai = new OpenAI({ apiKey });
 
   try {
-    console.log('Generating report with OpenAI...');
+    console.log('📝 Starting report generation process...');
     const completion = await openai.chat.completions.create({
       model,
       messages: [
         {
           role: 'system',
-          content: generateSystemPrompt(analysis)
+          content: generateSystemPrompt(analysis),
         },
         {
           role: 'user',
-          content: generateUserPrompt()
-        }
+          content: generateUserPrompt(),
+        },
       ],
       functions: [
         {
@@ -853,19 +896,17 @@ async function generateReport(analysis: Analysis, supabaseClient: SupabaseClient
             type: 'object',
             properties: {
               id: { type: 'string' },
-              overall_score: { type: 'number' },
-              validation_status: { 
-                type: 'string',
-                enum: ['Ready to Validate', 'Needs Refinement', 'Major Concerns']
-              },
+              insight_id: { type: 'string' },
+              url: { type: 'string' },
               summary: { type: 'string' },
               key_strengths: {
                 type: 'object',
                 properties: {
                   summary: { type: 'string' },
                   points: { type: 'array', items: { type: 'string' } },
-                  potential_impact: { type: 'string' }
-                }
+                  potential_impact: { type: 'string' },
+                },
+                required: ['summary', 'points', 'potential_impact'],
               },
               monetization: {
                 type: 'object',
@@ -876,105 +917,99 @@ async function generateReport(analysis: Analysis, supabaseClient: SupabaseClient
                       approach: { type: 'string' },
                       rationale: { type: 'string' },
                       pricing: { type: 'string' },
-                      benefits: { type: 'array', items: { type: 'string' } }
-                    }
+                      benefits: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['approach', 'rationale', 'pricing', 'benefits'],
                   },
                   alternative_approaches: {
                     type: 'array',
                     items: {
                       type: 'object',
                       properties: {
-                        model: { 
-                          type: 'string',
-                          enum: ['Subscription', 'One-Time Purchase', 'Freemium']
-                        },
+                        model: { type: 'string' },
                         implementation: { type: 'string' },
                         best_for: { type: 'string' },
                         pricing: { type: 'string' },
                         pros: { type: 'array', items: { type: 'string' } },
-                        cons: { type: 'array', items: { type: 'string' } }
-                      }
-                    }
+                        cons: { type: 'array', items: { type: 'string' } },
+                      },
+                      required: ['model', 'implementation', 'best_for', 'pricing', 'pros', 'cons'],
+                    },
                   },
-                  optimization_opportunities: { 
-                    type: 'array',
-                    items: { type: 'string' }
-                  },
+                  optimization_opportunities: { type: 'string' },
                   early_stage_strategy: {
                     type: 'object',
                     properties: {
                       initial_approach: { type: 'string' },
                       key_metrics: { type: 'array', items: { type: 'string' } },
-                      adjustment_triggers: { type: 'array', items: { type: 'string' } }
-                    }
-                  }
-                }
+                      adjustment_triggers: { type: 'array', items: { type: 'string' } },
+                    },
+                    required: ['initial_approach', 'key_metrics', 'adjustment_triggers'],
+                  },
+                },
+                required: [
+                  'primary_stream',
+                  'alternative_approaches',
+                  'optimization_opportunities',
+                  'early_stage_strategy',
+                ],
               },
               refinement_questions: {
                 type: 'array',
-                items: { type: 'string' }
+                items: {
+                  type: 'object',
+                  properties: {
+                    question: { type: 'string' },
+                    context: { type: 'string' },
+                  },
+                  required: ['question', 'context'],
+                },
+                minItems: 1,
               },
               challenges: {
-                type: 'object',
-                properties: {
-                  potential_pitfalls: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        challenge: { type: 'string' },
-                        context: { type: 'string' }
-                      }
-                    }
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    challenge: { type: 'string' },
+                    description: { type: 'string' },
                   },
-                  common_gotchas: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        issue: { type: 'string' },
-                        prevention: { type: 'string' }
-                      }
-                    }
-                  }
-                }
+                  required: ['challenge', 'description'],
+                },
+                minItems: 1,
               },
               mitigation_strategies: {
                 type: 'array',
                 items: {
                   type: 'object',
                   properties: {
-                    challenge: { type: 'string' },
-                    actions: { type: 'array', items: { type: 'string' } }
-                  }
-                }
+                    strategy: { type: 'string' },
+                    details: { type: 'string' },
+                  },
+                  required: ['strategy', 'details'],
+                },
+                minItems: 1,
               },
               recommendation: {
                 type: 'object',
                 properties: {
-                  verdict: { type: 'string' },
-                  confidence: { 
-                    type: 'string',
-                    enum: ['High', 'Medium', 'Low']
-                  },
-                  rationale: { type: 'string' }
-                }
+                  recommendation: { type: 'string' },
+                  priority: { type: 'string' },
+                  timeline: { type: 'string' },
+                },
+                required: ['recommendation', 'priority', 'timeline'],
               },
               next_steps: {
-                type: 'object',
-                properties: {
-                  ideal_customers: {
-                    type: 'object',
-                    properties: {
-                      profile: { type: 'string' },
-                      channels: { type: 'array', items: { type: 'string' } },
-                      influencers: { type: 'array', items: { type: 'string' } },
-                      pain_points: { type: 'array', items: { type: 'string' } },
-                      approach_strategy: { type: 'string' }
-                    }
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    title: { type: 'string' },
+                    description: { type: 'string' },
+                    priority: { type: 'string' },
                   },
-                  validation_questions: { type: 'array', items: { type: 'string' } }
-                }
+                  required: ['title', 'description', 'priority'],
+                },
               },
               improvement_areas: {
                 type: 'array',
@@ -982,30 +1017,66 @@ async function generateReport(analysis: Analysis, supabaseClient: SupabaseClient
                   type: 'object',
                   properties: {
                     area: { type: 'string' },
-                    suggestions: { type: 'array', items: { type: 'string' } }
-                  }
-                }
-              }
+                    details: { type: 'string' },
+                  },
+                  required: ['area', 'details'],
+                },
+              },
             },
-            required: ['overall_score', 'validation_status', 'summary', 'key_strengths', 
-                      'monetization', 'refinement_questions', 'challenges', 'mitigation_strategies', 
-                      'recommendation']
-          }
-        }
+            required: [
+              'summary',
+              'key_strengths',
+              'monetization',
+              'refinement_questions',
+              'challenges',
+              'mitigation_strategies',
+              'recommendation',
+            ],
+          },
+        },
       ],
-      function_call: { name: 'generate_report' }
+      function_call: { name: 'generate_report' },
     });
 
-    const functionCall = completion.choices[0].message.function_call;
-    if (!functionCall || !functionCall.arguments) {
-      throw new Error('Failed to get function call response from OpenAI');
+    const result = completion.choices[0]?.message?.function_call?.arguments;
+    if (!result) {
+      if (completion.choices[0]?.message?.refusal) {
+        console.error('Model refused to generate report:', completion.choices[0].message.refusal);
+        throw new Error('Failed to generate report: ' + completion.choices[0].message.refusal);
+      }
+      throw new Error('Failed to generate report: No result returned');
     }
 
-    const report = JSON.parse(functionCall.arguments) as Report;
-    report.id = nanoid();
-    
-    return report;
+    console.log('Raw report data:', result);
+    const parsedResult = JSON.parse(result);
 
+    // Generate report ID and URL
+    const reportId = uuidv4();
+    const isDevelopment =
+      Deno.env.get('SUPABASE_URL')?.includes('localhost') ||
+      Deno.env.get('SUPABASE_URL')?.includes('127.0.0.1');
+    const baseUrl = isDevelopment ? 'http://localhost:3000' : Deno.env.get('PUBLIC_APP_URL');
+    const reportUrl = `${baseUrl}/idea/report/${reportId}`;
+
+    // Ensure all required arrays are initialized
+    const report: Report = {
+      ...parsedResult,
+      id: reportId,
+      url: reportUrl,
+      refinement_questions: parsedResult.refinement_questions || [],
+      challenges: parsedResult.challenges || [],
+      mitigation_strategies: parsedResult.mitigation_strategies || [],
+      next_steps: parsedResult.next_steps || [],
+      improvement_areas: parsedResult.improvement_areas || [],
+      recommendation: parsedResult.recommendation || {
+        recommendation: '',
+        priority: '',
+        timeline: '',
+      },
+    };
+
+    console.log('Processed report data:', report);
+    return report;
   } catch (error) {
     console.error('Failed to generate report:', error);
     throw error;
@@ -1027,10 +1098,11 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   try {
-    const { analysisId, email } = await req.json() as RequestBody;
+    const { insight_id } = (await req.json()) as RequestBody;
+    console.log('📝 Starting report generation process:', { insight_id });
 
-    if (!analysisId) {
-      throw new Error('Analysis ID is required');
+    if (!insight_id) {
+      throw new Error('Insight ID is required');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -1041,53 +1113,91 @@ async function handleRequest(req: Request): Promise<Response> {
     }
 
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('🔌 Connected to Supabase, fetching insight...');
 
-    // Fetch the analysis data
-    const { data: analysis, error: fetchError } = await supabaseClient
-      .from('idea_analyses')
+    // Fetch the insight from the database
+    const { data: insightData, error: insightError } = await supabaseClient
+      .from('idea_insights')
       .select('*')
-      .eq('id', analysisId)
+      .eq('id', insight_id)
       .single();
 
-    if (fetchError || !analysis) {
-      throw new Error(fetchError?.message || 'Analysis not found');
+    if (insightError) {
+      console.error('❌ Failed to fetch insight:', insightError);
+      throw insightError;
     }
 
-    // Generate the report
-    const report = await generateReport(analysis, supabaseClient);
+    if (!insightData) {
+      console.error('❌ No insight found for ID:', insight_id);
+      throw new Error('Insight not found');
+    }
 
-    // Store the report in Supabase
-    const { error: insertError } = await supabaseClient
+    console.log('✅ Insight retrieved successfully');
+
+    // Validate the insight data
+    if (!validateAnalysis(insightData)) {
+      console.error('❌ Invalid insight data:', insightData);
+      throw new Error('Invalid insight data');
+    }
+
+    console.log('✅ Insight data validated, generating report...');
+    const report = await generateReport(insightData, supabaseClient);
+    console.log('✅ Report generated successfully');
+
+    // Generate unique identifiers
+    const isDevelopment =
+      Deno.env.get('SUPABASE_URL')?.includes('localhost') ||
+      Deno.env.get('SUPABASE_URL')?.includes('127.0.0.1');
+    const baseUrl = isDevelopment ? 'http://localhost:3000' : Deno.env.get('PUBLIC_APP_URL');
+    const reportUrl = `${baseUrl}/idea/report/${report.id}`;
+
+    // Store the report in idea_reports
+    console.log('🔄 Storing report...');
+    const { data: reportData, error: reportError } = await supabaseClient
       .from('idea_reports')
       .insert({
         id: report.id,
-        analysis_id: analysisId,
-        email: email,
-        report_data: report,
-        created_at: new Date().toISOString()
-      });
+        insight_id: insight_id,
+        url: reportUrl,
+        summary: report.summary,
+        key_strengths: report.key_strengths,
+        monetization: report.monetization,
+        refinement_questions: report.refinement_questions,
+        challenges: report.challenges,
+        mitigation_strategies: report.mitigation_strategies,
+        recommendation: report.recommendation,
+        improvement_areas: report.improvement_areas || [],
+      })
+      .select()
+      .single();
 
-    if (insertError) {
-      throw new Error(`Failed to store report: ${insertError.message}`);
+    if (reportError) {
+      console.error('❌ Failed to store report:', reportError);
+      throw reportError;
     }
+
+    console.log('✅ Report stored successfully');
+
+    // Log the report URL for manual access
+    console.log('📋 Report URL:', reportUrl);
 
     return new Response(
       JSON.stringify({
         success: true,
-        report: report
+        reportId: report.id,
+        reportUrl: reportUrl,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
-
   } catch (error) {
     console.error('Error in handleRequest:', error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

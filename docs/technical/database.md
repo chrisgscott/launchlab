@@ -2,6 +2,118 @@
 
 This guide covers database setup, access patterns, and best practices for working with the LaunchLab database.
 
+# LaunchLab Database Schema
+
+## Core Tables
+
+### 1. idea_reports
+
+Stores comprehensive business idea analysis reports.
+
+```sql
+create table idea_reports (
+  id uuid primary key,
+  url text not null,
+  summary text not null,
+  key_strengths jsonb not null,
+  monetization jsonb not null,
+  refinement_questions jsonb[] not null,
+  challenges jsonb[] not null,
+  mitigation_strategies jsonb[] not null,
+  recommendation jsonb not null,
+  improvement_areas jsonb[] not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
+
+#### Key Fields
+
+- `key_strengths`: Contains summary, points, and potential impact
+- `monetization`: Contains primary stream, alternative approaches, and strategy
+- `refinement_questions`: Array of questions with context
+- `challenges`: Array of challenges with descriptions
+- `mitigation_strategies`: Array of strategies with details
+- `recommendation`: Contains recommendation, priority, and timeline
+- `improvement_areas`: Array of areas with details
+
+### 2. idea_insights
+
+Stores detailed insights and analysis metrics.
+
+```sql
+create table idea_insights (
+  id uuid primary key,
+  idea_id uuid references idea_reports(id),
+  categories jsonb[] not null,
+  overall_score numeric not null,
+  summary text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
+
+#### Key Fields
+
+- `categories`: Array of analysis categories with scores and details
+- `overall_score`: Numeric score from 0-10
+- `summary`: Text summary of insights
+
+## Access Patterns
+
+### Common Queries
+
+1. Fetch Report
+
+```typescript
+const { data: report } = await supabase
+  .from('idea_reports')
+  .select('*')
+  .eq('id', reportId)
+  .single();
+```
+
+2. Fetch Insights
+
+```typescript
+const { data: insights } = await supabase
+  .from('idea_insights')
+  .select('*')
+  .eq('idea_id', ideaId)
+  .single();
+```
+
+## Best Practices
+
+1. **Data Validation**
+
+   - Always validate jsonb fields before insertion
+   - Initialize empty arrays as `'[]'::jsonb`
+   - Use proper null handling
+
+2. **Performance**
+
+   - Index frequently queried fields
+   - Use appropriate jsonb operators
+   - Monitor query performance
+
+3. **Security**
+   - Implement RLS policies
+   - Validate user permissions
+   - Sanitize inputs
+
+## Making Changes
+
+When updating the database schema:
+
+1. Create a new migration
+2. Update TypeScript types
+3. Test data insertion/retrieval
+4. Update related components
+5. Verify RLS policies
+
+---
+
 ## Table of Contents
 
 1. [Connection Setup](#connection-setup)

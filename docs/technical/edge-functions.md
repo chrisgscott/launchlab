@@ -2,6 +2,64 @@
 
 This guide covers everything you need to know about working with Supabase Edge Functions in LaunchLab.
 
+# LaunchLab Edge Functions Implementation
+
+## Current Edge Functions
+
+### 1. Report Generation (`/supabase/functions/generate-report/index.ts`)
+
+Our primary edge function that generates comprehensive business idea analysis reports using OpenAI's gpt-4o-mini-2024-07-18 model.
+
+#### Key Features
+
+- OpenAI integration with structured outputs
+- Error handling and retries
+- Rate limiting
+- Input validation
+- Response processing
+
+#### Implementation Details
+
+```typescript
+// OpenAI Configuration
+const openai = new OpenAI({
+  apiKey: Deno.env.get('OPENAI_API_KEY')!,
+});
+
+// Function call structure
+const completion = await openai.chat.completions.create({
+  model: 'gpt-4o-mini-2024-07-18',
+  messages: messages,
+  functions: [functionSchema],
+  function_call: { name: 'generate_report' },
+});
+```
+
+#### Error Handling
+
+- Model refusal handling
+- Rate limit management
+- Timeout handling
+- Input validation
+
+#### Best Practices
+
+1. Always use structured outputs
+2. Initialize empty arrays/objects for nullable fields
+3. Implement proper error handling
+4. Log important events
+5. Validate all inputs
+
+#### Making Changes
+
+1. Update function schema to match Report interface
+2. Test with sample inputs
+3. Verify error handling
+4. Check response processing
+5. Update database operations
+
+---
+
 ## Table of Contents
 
 1. [Initial Setup](#initial-setup)

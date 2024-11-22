@@ -42,7 +42,7 @@
 
 - ✅ Multi-step idea input form
 - ✅ Educational tooltips and examples
-- ✅ AI-powered analysis using GPT-4
+- ✅ AI-powered analysis using gpt-4o-mini-2024-07-18
 - ✅ Comprehensive scoring system:
   - Market Opportunity (25%)
   - Competitive Advantage (20%)
@@ -181,6 +181,12 @@
      - Copy improvement
      - Market validation refinement
      - Pricing optimization
+
+## AI Model Updates
+
+- Upgraded to `gpt-4o-mini-2024-07-18` for improved performance and cost optimization
+- Enhanced response quality and reliability
+- Better handling of startup analysis and validation scenarios
 
 ## Technical Considerations
 

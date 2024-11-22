@@ -4,8 +4,15 @@ import { z } from 'zod';
 import { createClient } from '@/libs/supabase/server';
 
 // Initialize OpenAI client
+const apiKey = process.env.OPENAI_API_KEY;
+const model = process.env.OPENAI_MODEL || 'gpt-4o-mini-2024-07-18';
+
+if (!apiKey) {
+  throw new Error('OPENAI_API_KEY environment variable is not set');
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
 });
 
 // Validation schema for the request body
@@ -21,85 +28,85 @@ const REPORT_SCHEMA = {
     type: 'object',
     properties: {
       // Validation Strategy
-      validationStrategy: {
+      validation_strategy: {
         type: 'object',
         description: 'Overall validation strategy and approach',
         properties: {
           summary: { type: 'string' },
-          keyObjectives: {
+          key_objectives: {
             type: 'array',
             items: { type: 'string' },
           },
           timeline: { type: 'string' },
         },
-        required: ['summary', 'keyObjectives', 'timeline'],
+        required: ['summary', 'key_objectives', 'timeline'],
       },
       // Customer Validation
-      customerValidation: {
+      customer_validation: {
         type: 'object',
         description: 'Steps to validate customer needs and willingness to pay',
         properties: {
-          targetSegments: {
+          target_segments: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
                 segment: { type: 'string' },
                 characteristics: { type: 'string' },
-                findingChannels: { type: 'string' },
+                finding_channels: { type: 'string' },
               },
-              required: ['segment', 'characteristics', 'findingChannels'],
+              required: ['segment', 'characteristics', 'finding_channels'],
             },
           },
-          interviewQuestions: {
+          interview_questions: {
             type: 'array',
             items: { type: 'string' },
           },
-          successMetrics: {
+          success_metrics: {
             type: 'array',
             items: { type: 'string' },
           },
         },
-        required: ['targetSegments', 'interviewQuestions', 'successMetrics'],
+        required: ['target_segments', 'interview_questions', 'success_metrics'],
       },
       // Solution Validation
-      solutionValidation: {
+      solution_validation: {
         type: 'object',
         description: 'Steps to validate the proposed solution',
         properties: {
-          mvpFeatures: {
+          mvp_features: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
                 feature: { type: 'string' },
                 purpose: { type: 'string' },
-                testingApproach: { type: 'string' },
+                testing_approach: { type: 'string' },
               },
-              required: ['feature', 'purpose', 'testingApproach'],
+              required: ['feature', 'purpose', 'testing_approach'],
             },
           },
-          testingMethods: {
+          testing_methods: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
                 method: { type: 'string' },
                 description: { type: 'string' },
-                expectedOutcome: { type: 'string' },
+                expected_outcome: { type: 'string' },
               },
-              required: ['method', 'description', 'expectedOutcome'],
+              required: ['method', 'description', 'expected_outcome'],
             },
           },
         },
-        required: ['mvpFeatures', 'testingMethods'],
+        required: ['mvp_features', 'testing_methods'],
       },
       // Market Validation
-      marketValidation: {
+      market_validation: {
         type: 'object',
         description: 'Steps to validate market size and competition',
         properties: {
-          marketResearch: {
+          market_research: {
             type: 'array',
             items: {
               type: 'object',
@@ -111,7 +118,7 @@ const REPORT_SCHEMA = {
               required: ['area', 'sources', 'metrics'],
             },
           },
-          competitorAnalysis: {
+          competitor_analysis: {
             type: 'array',
             items: {
               type: 'object',
@@ -124,7 +131,7 @@ const REPORT_SCHEMA = {
             },
           },
         },
-        required: ['marketResearch', 'competitorAnalysis'],
+        required: ['market_research', 'competitor_analysis'],
       },
       // Risks and Mitigation
       risks: {
@@ -135,18 +142,18 @@ const REPORT_SCHEMA = {
           properties: {
             risk: { type: 'string' },
             impact: { type: 'string' },
-            mitigationStrategy: { type: 'string' },
+            mitigation_strategy: { type: 'string' },
           },
-          required: ['risk', 'impact', 'mitigationStrategy'],
+          required: ['risk', 'impact', 'mitigation_strategy'],
         },
       },
       // Validation Status
-      validationStatus: {
+      validation_status: {
         type: 'string',
         enum: ['READY TO VALIDATE', 'NEEDS REFINEMENT', 'MAJOR CONCERNS'],
       },
       // Critical Issues
-      criticalIssues: {
+      critical_issues: {
         type: 'array',
         description: 'Critical issues that must be addressed',
         items: {
@@ -160,7 +167,7 @@ const REPORT_SCHEMA = {
         },
       },
       // Next Steps Report
-      nextStepsReport: {
+      next_steps_report: {
         type: 'array',
         description: 'Prioritized next steps for validation',
         items: {
@@ -178,14 +185,14 @@ const REPORT_SCHEMA = {
       },
     },
     required: [
-      'validationStrategy',
-      'customerValidation',
-      'solutionValidation',
-      'marketValidation',
+      'validation_strategy',
+      'customer_validation',
+      'solution_validation',
+      'market_validation',
       'risks',
-      'validationStatus',
-      'criticalIssues',
-      'nextStepsReport',
+      'validation_status',
+      'critical_issues',
+      'next_steps_report',
     ],
   },
 };
@@ -218,7 +225,7 @@ export async function POST(request: Request) {
     console.log('Calling OpenAI with schema:', JSON.stringify(REPORT_SCHEMA, null, 2));
 
     const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4',
+      model,
       messages: [
         {
           role: 'system',

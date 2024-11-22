@@ -9,9 +9,5 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables');
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-    },
-  });
+  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey);
 }

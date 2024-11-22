@@ -1,154 +1,47 @@
--- Seed data for idea_analyses
-insert into idea_analyses (
-    problem_statement,
-    target_audience,
-    unique_value_proposition,
-    product_description,
-    insights
-) values (
-    'Working parents struggle to plan and prepare healthy, sustainable meals for their families while managing food waste and environmental impact.',
-    'Environmentally conscious working parents, aged 30-45, with household incomes above $75,000.',
-    'EcoMeal is the first meal planning app that combines AI-powered recipe suggestions with real-time carbon footprint tracking.',
-    'AI-powered weekly meal plans with smart shopping lists and carbon footprint tracking.',
-    jsonb_build_object(
-        'summary', jsonb_build_object(
-            'oneLiner', 'EcoMeal helps working parents plan sustainable meals and reduce food waste.',
-            'overview', 'An AI-powered meal planning app that combines sustainability tracking with practical meal solutions for busy families.',
-            'problemStatement', 'Working parents struggle with meal planning while wanting to minimize environmental impact.',
-            'targetMarket', 'Environmentally conscious working parents with disposable income'
-        ),
-        'marketAnalysis', jsonb_build_object(
-            'marketSize', 'Large and growing market of eco-conscious consumers',
-            'competitiveLandscape', 'Few direct competitors in the sustainable meal planning space',
-            'keyDifferentiators', array['Real-time carbon footprint tracking', 'AI-powered personalization', 'Focus on sustainability'],
-            'marketTrends', array['Growing interest in sustainable living', 'Increasing adoption of meal planning apps', 'Rising awareness of food waste impact']
-        ),
-        'valueProposition', jsonb_build_object(
-            'keyBenefits', array['Save time on meal planning', 'Reduce environmental impact', 'Minimize food waste'],
-            'uniqueFeatures', array['First meal planning app with carbon footprint tracking', 'AI-powered recipe suggestions', 'Smart shopping lists'],
-            'customerPainPoints', array['Limited time for meal planning', 'Concern about environmental impact', 'Food waste management']
-        ),
-        'validationStatus', 'READY TO VALIDATE',
-        'validationDetails', jsonb_build_object(
-            'nextSteps', array['Validate carbon footprint calculations', 'Build recipe database', 'Test with target users'],
-            'keyMetrics', array['User retention rate', 'Carbon footprint reduction', 'Food waste reduction'],
-            'criticalQuestions', array['How accurate are the carbon footprint calculations?', 'What is the minimum viable recipe database size?', 'How will we validate recipe suggestions?']
-        ),
-        'marketOpportunity', jsonb_build_object(
-            'size', 'Large and growing',
-            'growth', 'High',
-            'barriers', array['Data accuracy', 'Recipe database', 'User adoption']
-        ),
-        'competitiveAdvantage', jsonb_build_object(
-            'uniqueFeatures', array['Carbon tracking', 'AI personalization'],
-            'barriers', array['First mover advantage', 'Data partnerships']
-        ),
-        'feasibility', jsonb_build_object(
-            'technical', 'High',
-            'operational', 'Medium',
-            'challenges', array['Data accuracy', 'Recipe sourcing']
-        ),
-        'revenuePotential', jsonb_build_object(
-            'model', 'Freemium',
-            'streams', array['Premium subscriptions', 'Partner integrations'],
-            'projections', 'High potential with proven willingness to pay'
-        ),
-        'marketTiming', jsonb_build_object(
-            'readiness', 'High',
-            'trends', array['Sustainability focus', 'Digital solutions adoption']
-        ),
-        'scalability', jsonb_build_object(
-            'potential', 'High',
-            'requirements', array['Recipe database', 'Carbon data'],
-            'challenges', array['Data accuracy', 'User retention']
-        ),
-        'totalScore', 78,
-        'criticalIssues', '[]'::jsonb,
-        'nextSteps', array['Validate carbon footprint calculations', 'Build recipe database', 'Test with target users'],
-        'riskAssessment', jsonb_build_object(
-            'technicalRisks', array['Data accuracy for carbon footprint', 'Recipe database maintenance'],
-            'marketRisks', array['User engagement retention', 'Competition from established meal planning apps'],
-            'mitigationStrategies', array['Partner with environmental research institutions', 'Implement regular data validation', 'Focus on user engagement and retention']
-        )
-    )
-);
-
--- Add a sample idea report
-insert into idea_reports (
-    id,
-    analysis_id,
-    email,
-    report_data,
-    created_at
-) values (
-    'sample-report-id',
-    (select id from idea_analyses limit 1),
-    'test@example.com',
-    jsonb_build_object(
-        'overall_score', 78,
-        'validation_status', 'Ready to Validate',
-        'summary', 'EcoMeal shows strong potential in the growing sustainable meal planning market.',
-        'key_strengths', jsonb_build_object(
-            'summary', 'Strong market opportunity with clear competitive advantages',
-            'points', array[
-                'First-to-market with carbon footprint tracking',
-                'AI-powered personalization',
-                'Target audience has proven willingness to pay'
-            ],
-            'potential_impact', 'Could significantly reduce household food waste while making sustainable eating more accessible'
-        ),
-        'monetization', jsonb_build_object(
-            'primary_stream', jsonb_build_object(
-                'approach', 'Freemium Subscription',
-                'rationale', 'Allows users to try basic features while monetizing power users',
-                'pricing', '$9.99/month for premium features',
-                'benefits', array[
-                    'Predictable recurring revenue',
-                    'Lower barrier to entry',
-                    'Upsell opportunities'
-                ]
-            ),
-            'alternative_approaches', '[]'::jsonb,
-            'optimization_opportunities', '[]'::jsonb,
-            'early_stage_strategy', jsonb_build_object(
-                'initial_approach', 'Focus on growing user base with free tier',
-                'key_metrics', array['User retention', 'Premium conversion rate'],
-                'adjustment_triggers', array['Low retention', 'High churn']
-            )
-        ),
-        'refinement_questions', array[
-            'How will you source accurate carbon footprint data?',
-            'What integration partnerships might be needed?',
-            'How will you validate recipe suggestions?'
-        ],
-        'challenges', jsonb_build_object(
-            'potential_pitfalls', array[
-                jsonb_build_object(
-                    'challenge', 'Data accuracy',
-                    'context', 'Carbon footprint calculations must be reliable'
-                )
-            ],
-            'common_gotchas', array[
-                jsonb_build_object(
-                    'issue', 'Recipe complexity',
-                    'prevention', 'Start with simple, proven recipes'
-                )
-            ]
-        ),
-        'mitigation_strategies', array[
-            jsonb_build_object(
-                'challenge', 'Data accuracy',
-                'actions', array[
-                    'Partner with environmental research institutions',
-                    'Implement regular data validation'
-                ]
-            )
-        ],
-        'recommendation', jsonb_build_object(
-            'verdict', 'Proceed with validation',
-            'confidence', 'High',
-            'rationale', 'Strong market opportunity with clear differentiation'
-        )
-    ),
-    now()
+-- Seed data for idea_insights table
+-- This represents our initial example of a validated idea for LaunchLab itself
+INSERT INTO "public"."idea_insights" (
+    "id",
+    "user_id",
+    "idea_name",
+    "problem_statement",
+    "target_audience",
+    "unique_value_proposition",
+    "product_description",
+    "total_score",
+    "validation_status",
+    "market_opportunity",
+    "competitive_advantage",
+    "feasibility",
+    "revenue_potential",
+    "market_timing",
+    "scalability",
+    "critical_issues",
+    "created_at",
+    "updated_at"
+) VALUES (
+    '68006627-c9ec-4bf8-8c21-965338e1e9a1',  -- Fixed UUID for reproducibility
+    null,  -- No user_id as this is example data
+    'LaunchLab - AI-Powered Idea Validation Platform',
+    'Entrepreneurs waste thousands of dollars and months of effort building products that no one wants. Traditional market research is expensive and time-consuming, while existing validation tools are fragmented and unreliable. This leads to a 90% startup failure rate, with 42% failing due to no market need.',
+    'Dreamers and innovators from all walks of life who have ideas worth fighting for. From single parents with side-hustle dreams to small-town innovators, recent graduates with fresh perspectives to career-switchers who see problems nobody else is solving. Our platform serves those who have the courage to innovate, regardless of their background, resources, or location.',
+    'LaunchLab democratizes innovation by turning the complex journey of idea validation into a clear, supportive path anyone can follow. Our AI-powered platform provides honest insights, practical validation tools, and community support - helping you test your idea''s potential in days, not months, without risking everything. Because we believe great ideas can come from anywhere and they deserve a fighting chance.',
+    'LaunchLab is a supportive platform that guides entrepreneurs from initial idea to validated concept, regardless of their starting point. Our AI-powered system provides:
+Honest, judgment-free analysis of your idea''s potential
+Clear, actionable steps to validate your concept
+Landing page builder to attract and engage with early supporters
+Pre-launch monetization tools to test market demand and generate pre-launch revenue
+Community support from fellow innovators
+We''ve stripped away the jargon, complexity, and gatekeeping that typically block great ideas from becoming reality. Whether you''re sketching ideas during lunch breaks or building after hours, LaunchLab provides the insights, tools, and support you need to validate your concept without risking everything. No technical expertise required - just bring your idea and determination',
+    79,  -- Integer total_score
+    'READY TO VALIDATE',
+    '{"score": 85, "insights": [{"title": "Real Problem with a Large Audience", "description": "The high startup failure rate indicates a substantial market need for effective idea validation tools."}, {"title": "Growth Potential", "description": "With the rise of entrepreneurship and remote work, more people are looking for ways to validate ideas efficiently."}, {"title": "Active Demand", "description": "The increasing reliance on digital solutions for market research shows a readiness for platforms like LaunchLab."}], "improvement_tips": ["Survey potential users to refine their specific validation pain points.", "Research competitors to identify gaps in existing offerings.", "Create a minimum viable product (MVP) to test demand quickly."]}',
+    '{"score": 80, "insights": [{"title": "Democratizing Innovation", "description": "The platform''s focus on accessibility differentiates it in a crowded market."}, {"title": "AI-Driven Insights", "description": "Using AI for personalized validation can provide a competitive edge over traditional methods."}, {"title": "Community Support", "description": "Building a community around idea validation fosters user engagement and loyalty."}], "improvement_tips": ["Clearly communicate your unique AI capabilities compared to competitors.", "Develop partnerships with entrepreneurial organizations for credibility.", "Create case studies showcasing successful validation stories."]}',
+    '{"score": 75, "insights": [{"title": "Current Tech Capabilities", "description": "AI technology for analysis and landing page creation is available and feasible."}, {"title": "Resource Requirements", "description": "A skilled team for AI development and community management is essential."}, {"title": "Time to Launch", "description": "With a focused MVP, the platform can be launched within a few months."}], "improvement_tips": ["Outline a clear tech stack and development timeline for the MVP.", "Identify key team members or advisors to help build the platform.", "Consider a phased rollout, starting with core features."]}',
+    '{"score": 70, "insights": [{"title": "Clear Revenue Models", "description": "Subscription fees, premium features, and monetization tools offer multiple income streams."}, {"title": "User Willingness to Pay", "description": "Entrepreneurs often invest in tools that save them time and money."}, {"title": "Sustainability", "description": "Recurring revenue from subscriptions can provide a stable financial base."}], "improvement_tips": ["Test pricing strategies with potential users to gauge willingness to pay.", "Explore affiliate partnerships with related services for additional revenue.", "Develop a freemium model to attract users initially."]}',
+    '{"score": 90, "insights": [{"title": "Entrepreneurial Surge", "description": "The pandemic has accelerated interest in entrepreneurship and side hustles."}, {"title": "Technological Readiness", "description": "Users are increasingly comfortable using digital platforms for business solutions."}, {"title": "Shifts in Market Needs", "description": "The demand for low-cost, rapid validation tools is growing."}], "improvement_tips": ["Monitor emerging trends in entrepreneurship and tech for ongoing relevance.", "Engage with your target audience on social media to gather insights.", "Leverage current events to position your platform as a timely solution."]}',
+    '{"score": 80, "insights": [{"title": "Growth Potential", "description": "The platform can scale with increasing user demand and feature expansion."}, {"title": "Operational Complexity", "description": "Community management and continuous AI improvement will be vital as you grow."}, {"title": "Realistic Growth Path", "description": "If executed well, the platform can capture a significant share of the market."}], "improvement_tips": ["Plan for user support and community management as your user base grows.", "Invest in scalable technology solutions from the start.", "Develop a roadmap for future feature expansions based on user feedback."]}',
+    '{}',  -- Empty JSON object for critical_issues
+    NOW(),  -- Current timestamp for created_at
+    NOW()   -- Current timestamp for updated_at
 );
